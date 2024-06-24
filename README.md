@@ -2,7 +2,7 @@
 
 # Summer-Ray-Tracer
 
-> SJTU ACM Honors Class 2023 Ray Tracer Project with Rust!
+> SJTU ACM Honors Class 2024 Ray Tracer Project with Rust!
 
 **Before you start, please read this README carefully**, and there is no useless information in this document.
 
@@ -153,7 +153,7 @@ Just do some preparation work, including:
   - Read interesting books(e.g. 《Unity Shader 入门精要》) and implement other fancy features
 - Exploring some [Rust features](./doc/rust-bonus.md)
 - Some other interesting features. Please contact TAs if you have any ideas
-- You can refer to [artworks in raytracer-2022](./doc/artworks-2022.md)
+- You can refer to [artworks](./doc/artworks.md)
 
 #### Task 5 (10 pts): Final scene
 
@@ -176,28 +176,18 @@ Just do some preparation work, including:
 
 ### Assignments
 
-- For students in ACM Class:
-  - You are supposed to finish all tasks above
-  - Recommended timeline:
-    - **Day 1:**  Task 0: Environment setup
-    - **Day 2 - 3:** Task 0: Learn Rust
-    - **Day 4 - 6:** Task 1
-    - **Day 7 - 9:** Task 2
-    - **Day 10 - 12:** Task 3
-    - **Day 13 - 19:** Task 4 & 5
-    - **Day 20:** Pre & Task 6
-
-- For students in SEIEE CS:
-  - You are supposed to finish `Task0`, `Task1 (40pts)`, `Task2 (40pts)`, `Task5 (10pts)` and `Task6 (10pts)`
-  - Recommended timeline:
-    - **Day 1:**  Task 0: Environment setup
-    - **Day 2 - 3:** Task 0: Learn Rust
-    - **Day 4 - 6:** Task 1 & 5
-    - **Day 7 - 9:** Task 2 & 5
-    - **Day 10:** Pre & Task 6
+- You are supposed to finish all tasks above
+- Recommended timeline:
+  - **Day 1:**  Task 0: Environment setup
+  - **Day 2:** Task 0: Learn Rust
+  - **Day 3 - 5:** Task 1
+  - **Day 6 - 8:** Task 2
+  - **Day 9 - 11:** Task 3
+  - **Day 11 - 17:** Task 4 & 5
+  - **Day 18:** Pre & Task 6
 
 ### More Tips
 
 - You may need to use `cargo run --release` to accelerate the precedure.
 - There is no restriction on unsafe code, if you think it is necessary, you can use it, and explain why you need it in code review.
-- There will be 2 students to do presentations for ACM Class and SEIEE CS. They will get extra points based on their presentations, no more than 10 points.
+- There will be 2 students to do presentations. They will get extra points based on their presentations, no more than 10 points.
