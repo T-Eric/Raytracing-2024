@@ -178,8 +178,7 @@ Just do some preparation work, including:
 
 - You are supposed to finish all tasks above
 - Recommended timeline:
-  - **Day 1:**  Task 0: Environment setup
-  - **Day 2:** Task 0: Learn Rust
+  - **Day 1 - 2:**  Task 0: Environment setup & Learn Rust
   - **Day 3 - 5:** Task 1
   - **Day 6 - 8:** Task 2
   - **Day 9 - 11:** Task 3
