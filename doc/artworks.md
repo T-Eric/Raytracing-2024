@@ -19,19 +19,3 @@ Reference to [raytracer-2022](https://github.com/ACMClassCourse-2021/PPCA-Raytra
 ![acm_2](assets/2023/acm_2.png)
 ![acm_3](assets/2023/acm_3.png)
 ![acm_4](assets/2023/acm_4.png)
-
-## Advanced features
-
-### Edge detection
-
-<img src="assets/image-20230629191317923.png" alt="image-20230629191317923" style="zoom:50%;" />
-
-<img src="assets/image-20230629191346961.png" alt="image-20230629191346961" style="zoom:80%;" />
-
-### Normal mapping
-
-<img src="assets/SJTU_cubiod_scene.jpg" alt="SJTU" style="zoom:50%;" />
-
-### interpolation
-
-<img src="assets/image-20230629191610723.png" alt="image-20230629191610723" style="zoom:100%;" />

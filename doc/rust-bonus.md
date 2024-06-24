@@ -42,3 +42,6 @@ Reference to [Former Tutorial](https://github.com/aik2mlj/raytracer-tutorial)
 
 ### Track 6: Advanced Features 增加对 Transform 的 PDF 支持。
 
+### Track 7: Some CG-bonus
+
+具体内容可以在 [CG-bonus](./CG-bonus.md) 中查看。
