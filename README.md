@@ -152,6 +152,7 @@ Just do some preparation work, including:
   - Lens flare, depth of field, axis shift, exposure, etc.
   - Read interesting books(e.g. 《Unity Shader 入门精要》) and implement other fancy features
 - Exploring some [Rust features](./doc/rust-bonus.md)
+- Some details are shown in [rust-bonus](./doc/rust-bonus.md)
 - Some other interesting features. Please contact TAs if you have any ideas
 - You can refer to [artworks](./doc/artworks.md)
 
