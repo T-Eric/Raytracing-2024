@@ -165,14 +165,14 @@ Just do some preparation work, including:
 
 ### Basic Requirements
 
-- Remember to provide each book's generated images. Finally, you should upload the `output` folder to `Github Releases`
+- Remember to provide each book's generated images.
 - Pass the checks in `Github Actions`, including (already included in `run.yml`):
     - `cargo fmt --all -- --check`
     - `cargo clippy --all -- -D warnings`
     - `cargo test --all`
     - `cargo build --all --release`
     - `cargo run --all --release`
-- Each image output commit should be tagged, if tagged, `run.yml` settings will run your code and generate the output images. You should **let us directly see the output images (a '.zip' file) in the `Github Actions` page**
+- Each image output commit should be tagged, if tagged, `run.yml` settings will run your code and generate the output images. You should **let us directly see the output images in the `Github Actions` page**
 - You should have a document recording all the bonus you have done briefly. For each bonus, you should show the code or a benchmark of your work.
 
 ### Assignments
