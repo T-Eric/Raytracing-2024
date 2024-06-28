@@ -1,4 +1,3 @@
-
 mod utils;
 
 use utils::color::{put_color, Color};
