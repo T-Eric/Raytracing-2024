@@ -52,8 +52,7 @@ fn main() {
         - view_u.clone() / 2.0
         - view_v.clone() / 2.0;
     let pixel00_loc = viewport_up_left + (&pixel_delta_u + &pixel_delta_v) * 0.5;
-
-    println!("P3\n{0} {1}\n255", image_width, image_height);
+    println!("P3\n{image_width} {image_height}\n255");
 
     for j in 0..image_height {
         for i in 0..image_width {
