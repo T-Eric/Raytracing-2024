@@ -1,8 +1,9 @@
-// some constants
-
 use rand::random;
 
+// some constants
+
 pub const INFINITY: f64 = f64::INFINITY;
+
 pub const _PI: f64 = std::f64::consts::PI;
 
 //some utility functions
