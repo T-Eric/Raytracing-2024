@@ -31,7 +31,7 @@ impl Ray {
     }
 
     // at time t, where is it (dir is the speed)
-    pub fn _at(&self, t: f64) -> Point3 {
+    pub fn at(&self, t: f64) -> Point3 {
         self.orig.clone() + (self.dir.clone() * t)
     }
 }
