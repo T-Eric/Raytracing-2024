@@ -1,5 +1,4 @@
 mod utils;
-
 use utils::color::{Color, *};
 use utils::ray::Ray;
 use utils::vec3::{Point3, Vec3, *};
@@ -52,6 +51,7 @@ fn main() {
         - &view_u / 2.0
         - &view_v / 2.0;
     let pixel00_loc = viewport_up_left + (&pixel_delta_u + &pixel_delta_v) * 0.5;
+
     println!("P3\n{image_width} {image_height}\n255");
 
     for j in 0..image_height {
