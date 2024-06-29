@@ -3,6 +3,7 @@ use utils::color::{Color, *};
 use utils::ray::Ray;
 use utils::vec3::{Point3, Vec3, *};
 
+//for pic 1.3
 fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> bool {
     let oc = center - r.origin();
     let a = dot(r.direction(), r.direction());
