@@ -1,4 +1,3 @@
-#[allow(dead_code)]
 use std::f64;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
@@ -53,6 +52,50 @@ impl Div<f64> for Vec3 {
     }
 }
 
+impl Add for &Vec3 {
+    type Output = Vec3;
+    fn add(self, rhs: &Vec3) -> Self::Output {
+        Vec3 {
+            e: [
+                self.e[0] + rhs.e[0],
+                self.e[1] + rhs.e[1],
+                self.e[2] + rhs.e[2],
+            ],
+        }
+    }
+}
+
+impl Sub for &Vec3 {
+    type Output = Vec3;
+    fn sub(self, rhs: &Vec3) -> Self::Output {
+        Vec3 {
+            e: [
+                self.e[0] - rhs.e[0],
+                self.e[1] - rhs.e[1],
+                self.e[2] - rhs.e[2],
+            ],
+        }
+    }
+}
+
+impl Mul<f64> for &Vec3 {
+    type Output = Vec3;
+    fn mul(self, rhs: f64) -> Self::Output {
+        Vec3 {
+            e: [self.e[0] * rhs, self.e[1] * rhs, self.e[2] * rhs],
+        }
+    }
+}
+
+impl Div<f64> for &Vec3 {
+    type Output = Vec3;
+    fn div(self, rhs: f64) -> Self::Output {
+        Vec3 {
+            e: [self.e[0] / rhs, self.e[1] / rhs, self.e[2] / rhs],
+        }
+    }
+}
+
 impl AddAssign for Vec3 {
     fn add_assign(&mut self, rhs: Vec3) {
         self.e[0] += rhs.e[0];
@@ -95,6 +138,16 @@ impl Neg for Vec3 {
     }
 }
 
+impl Neg for &Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Self::Output {
+        Vec3 {
+            e: [-self.e[0], -self.e[1], -self.e[2]],
+        }
+    }
+}
+
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vec3 { e: [x, y, z] }
@@ -128,18 +181,19 @@ impl Vec3 {
     pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }
-    pub fn _dot(u: &Vec3, v: &Vec3) -> f64 {
-        u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2]
-    }
-    pub fn _cross(u: &Vec3, v: &Vec3) -> Vec3 {
-        Vec3::new(
-            u.e[1] * v.e[2] - u.e[2] * v.e[1],
-            u.e[2] * v.e[0] - u.e[0] * v.e[2],
-            u.e[0] * v.e[1] - u.e[1] * v.e[0],
-        )
-    }
-    pub fn unit_vector(v: &Vec3) -> Vec3 {
-        let ret: Vec3 = Self::copy(v);
-        ret / v.length()
-    }
+}
+
+pub fn dot(u: &Vec3, v: &Vec3) -> f64 {
+    u.e[0] * v.e[0] + u.e[1] * v.e[1] + u.e[2] * v.e[2]
+}
+pub fn _cross(u: &Vec3, v: &Vec3) -> Vec3 {
+    Vec3::new(
+        u.e[1] * v.e[2] - u.e[2] * v.e[1],
+        u.e[2] * v.e[0] - u.e[0] * v.e[2],
+        u.e[0] * v.e[1] - u.e[1] * v.e[0],
+    )
+}
+pub fn unit_vector(v: &Vec3) -> Vec3 {
+    let ret: Vec3 = Vec3::copy(v);
+    ret / v.length()
 }

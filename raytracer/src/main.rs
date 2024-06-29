@@ -1,11 +1,23 @@
 mod utils;
 
-use utils::color::{put_color, Color};
+use utils::color::{Color, *};
 use utils::ray::Ray;
-use utils::vec3::{Point3, Vec3};
+use utils::vec3::{Point3, Vec3, *};
+
+fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> bool {
+    let oc = center - r.origin();
+    let a = dot(r.direction(), r.direction());
+    let b = -2.0 * dot(r.direction(), &oc);
+    let c = dot(&oc, &oc) - radius * radius;
+    let delta = b * b - 4.0 * a * c;
+    delta >= 0f64
+}
 
 fn ray_color(r: &Ray) -> Color {
-    let unit_direction = Vec3::unit_vector(r.direction());
+    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, &r) {
+        return Color::new(1.0, 0.0, 0.0);
+    }
+    let unit_direction = unit_vector(r.direction());
     let a = 0.5 * (unit_direction.y() + 1.0);
     Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
 }
@@ -39,16 +51,15 @@ fn main() {
         - Vec3::new(0.0, 0.0, focal_length)
         - view_u.clone() / 2.0
         - view_v.clone() / 2.0;
-    let pixel00_loc = viewport_up_left + (pixel_delta_u.clone() + pixel_delta_v.clone()) * 0.5;
+    let pixel00_loc = viewport_up_left + (&pixel_delta_u + &pixel_delta_v) * 0.5;
 
     println!("P3\n{0} {1}\n255", image_width, image_height);
 
     for j in 0..image_height {
         for i in 0..image_width {
-            let pixel_center = pixel00_loc.clone()
-                + (pixel_delta_u.clone() * i as f64)
-                + (pixel_delta_v.clone() * j as f64);
-            let ray_direction = pixel_center - camera_center.clone();
+            let pixel_center =
+                &pixel00_loc + &(&pixel_delta_u * i as f64) + (&pixel_delta_v * j as f64);
+            let ray_direction = &pixel_center - &camera_center;
             let r = Ray::new(&camera_center, &ray_direction);
             let pixel_color = ray_color(&r);
             put_color(&pixel_color);
