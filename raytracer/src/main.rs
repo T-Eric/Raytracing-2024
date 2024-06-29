@@ -14,7 +14,7 @@ fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> bool {
 }
 
 fn ray_color(r: &Ray) -> Color {
-    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, &r) {
+    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r) {
         return Color::new(1.0, 0.0, 0.0);
     }
     let unit_direction = unit_vector(r.direction());
@@ -44,13 +44,13 @@ fn main() {
     let view_u = Vec3::new(view_width, 0.0, 0.0);
     let view_v = Vec3::new(0.0, -view_height, 0.0);
     //the pixel deltas
-    let pixel_delta_u = view_u.clone() / image_width as f64;
-    let pixel_delta_v = view_v.clone() / image_height as f64;
+    let pixel_delta_u = &view_u / image_width as f64;
+    let pixel_delta_v = &view_v / image_height as f64;
     //the view location
     let viewport_up_left = camera_center.clone()
         - Vec3::new(0.0, 0.0, focal_length)
-        - view_u.clone() / 2.0
-        - view_v.clone() / 2.0;
+        - &view_u / 2.0
+        - &view_v / 2.0;
     let pixel00_loc = viewport_up_left + (&pixel_delta_u + &pixel_delta_v) * 0.5;
     println!("P3\n{image_width} {image_height}\n255");
 
