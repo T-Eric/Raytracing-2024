@@ -9,11 +9,12 @@ use utils::ray::Ray;
 use utils::sphere::Sphere;
 use utils::utility::INFINITY;
 use utils::vec3::{Point3, Vec3, *};
+use utils::interval::Interval;
 
 //for pic 1.3
 fn ray_color(r: &Ray, world: &HittableList) -> Color {
     let mut rec = HitRecord::default();
-    if world.hit(r, 0.0, INFINITY, &mut rec) {
+    if world.hit(r, &Interval::new(0.0, INFINITY), &mut rec) {
         return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
     }
 
