@@ -23,7 +23,7 @@ impl Ray {
             dir: other.dir.clone(),
         }
     }
-    pub fn origin(&self) -> &Point3 {
+    pub fn _origin(&self) -> &Point3 {
         &self.orig
     }
     pub fn direction(&self) -> &Vec3 {
