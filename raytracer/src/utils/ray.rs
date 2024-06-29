@@ -1,7 +1,14 @@
 use crate::utils::vec3::{Point3, Vec3};
+#[derive(Default)]
 pub struct Ray {
     orig: Point3,
     dir: Vec3,
+}
+
+impl Clone for Ray {
+    fn clone(&self) -> Self {
+        Self::_copy(self)
+    }
 }
 
 impl Ray {
@@ -9,12 +16,6 @@ impl Ray {
         Ray {
             orig: origin.clone(),
             dir: direction.clone(),
-        }
-    }
-    pub fn _zero() -> Self {
-        Ray {
-            orig: Point3::zero(),
-            dir: Vec3::zero(),
         }
     }
     pub fn _copy(other: &Ray) -> Self {

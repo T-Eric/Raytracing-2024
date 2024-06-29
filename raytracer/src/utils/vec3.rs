@@ -1,7 +1,7 @@
 use std::f64;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq)]
 pub struct Vec3 {
     e: [f64; 3],
 }
@@ -148,6 +148,18 @@ impl Neg for &Vec3 {
     }
 }
 
+impl Default for Vec3 {
+    fn default() -> Self {
+        Vec3 { e: [0.0, 0.0, 0.0] }
+    }
+}
+
+impl Clone for Vec3 {
+    fn clone(&self) -> Self {
+        Self::copy(self)
+    }
+}
+
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vec3 { e: [x, y, z] }
@@ -156,9 +168,6 @@ impl Vec3 {
         Vec3 {
             e: [v.e[0], v.e[1], v.e[2]],
         }
-    }
-    pub fn zero() -> Self {
-        Vec3 { e: [0.0, 0.0, 0.0] }
     }
     pub fn x(&self) -> f64 {
         self.e[0]
