@@ -12,7 +12,7 @@ pub fn _degrees_to_radians(degrees: f64) -> f64 {
     degrees * _PI / 180.0
 }
 
-pub fn _random_double(mn: f64, mx: f64) -> f64 {
+pub fn random_double(mn: f64, mx: f64) -> f64 {
     mn + (mx - mn) * random::<f64>()
 }
 

@@ -4,8 +4,8 @@ use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
 use crate::utils::ray::Ray;
 use crate::utils::utility::INFINITY;
-use crate::utils::vec3::{unit_vector, Point3, Vec3};
-use rand::random;
+use crate::utils::vec3::{random_on_hemisphere, unit_vector, Point3, Vec3};
+use rand;
 
 pub struct Camera {
     image_height: i32,
@@ -88,7 +88,11 @@ impl Camera {
 
     // A vector to a random point in [-0.5,-0.5]~[0.5,0.5] unit square.
     fn sample_square() -> Vec3 {
-        Vec3::new(random::<f64>() - 0.5, random::<f64>() - 0.5, 0.0)
+        Vec3::new(
+            rand::random::<f64>() - 0.5,
+            rand::random::<f64>() - 0.5,
+            0.0,
+        )
     }
 
     // Construct camera ray from the origin point and directed at randomly sampled
@@ -108,7 +112,11 @@ impl Camera {
     fn ray_color(r: &Ray, world: &HittableList) -> Color {
         let mut rec = HitRecord::default();
         if world.hit(r, &Interval::new(0.0, INFINITY), &mut rec) {
-            return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
+            // before 1.6
+            // return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
+            let direction = random_on_hemisphere(&rec.normal);
+            // let the light reflect, losing 50% every time
+            return Self::ray_color(&Ray::new(&rec.p, &direction), world) * 0.5;
         }
 
         let unit_direction = unit_vector(r.direction());
