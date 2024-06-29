@@ -48,7 +48,7 @@ impl Camera {
                     let r = self.get_ray(i, j);
                     pixel_color += Self::ray_color(&r, world);
                 }
-                put_color(&(&pixel_color*self.pixel_samples_scale));
+                put_color(&(&pixel_color * self.pixel_samples_scale));
             }
         }
     }

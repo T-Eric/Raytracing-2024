@@ -12,9 +12,9 @@ pub fn put_color(pixel_color: &Color) {
         min: 0.000,
         max: 0.999,
     };
-    let rbyte = (256.000 * INTENSITY.clamp(r))as i32;
-    let gbyte = (256.000 * INTENSITY.clamp(g))as i32;
-    let bbyte = (256.000 * INTENSITY.clamp(b))as i32;
+    let rbyte = (256.000 * INTENSITY.clamp(r)) as i32;
+    let gbyte = (256.000 * INTENSITY.clamp(g)) as i32;
+    let bbyte = (256.000 * INTENSITY.clamp(b)) as i32;
 
     println!("{rbyte} {gbyte} {bbyte}");
 }
