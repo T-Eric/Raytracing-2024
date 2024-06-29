@@ -3,3 +3,5 @@ doc/
 README.md
 rust-toolchain
 LICENSE
+raytracer/output/
+target/
