@@ -17,7 +17,6 @@ fn hit_sphere(center: &Point3, radius: f64, r: &Ray) -> f64 {
         (-b - delta.sqrt()) / (2.0 * a)
     }
 }
-
 fn ray_color(r: &Ray) -> Color {
     let t = hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, r);
     if t > 0.0 {
