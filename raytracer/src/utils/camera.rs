@@ -3,7 +3,7 @@ use crate::utils::hittable::{HitRecord, Hittable};
 use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
 use crate::utils::ray::Ray;
-use crate::utils::utility::INFINITY;
+use crate::utils::utility::{degrees_to_radians, INFINITY};
 use crate::utils::vec3::{unit_vector, Point3, Vec3};
 use rand;
 
@@ -19,6 +19,7 @@ pub struct Camera {
     pub aspect_ratio: f64,
     pub samples_per_pixel: i32,
     pub max_recurse_depth: i32,
+    pub vfov: f64, //vertical view angle
 }
 
 impl Camera {
@@ -27,12 +28,14 @@ impl Camera {
         aspect_ratio: f64,
         samples_per_pixel: i32,
         max_recurse_depth: i32,
+        vfov: f64,
     ) -> Camera {
         Camera {
             image_width,
             aspect_ratio,
             samples_per_pixel,
             max_recurse_depth,
+            vfov,
             image_height: -1,
             center: Point3::default(),
             pixel00_loc: Point3::default(),
@@ -77,7 +80,9 @@ impl Camera {
 
         // Determine viewport dimensions
         let focal_length = 1.0;
-        let view_height = 2.0;
+        let theta = degrees_to_radians(self.vfov);
+        let h = (theta / 2.0).tan();
+        let view_height = 2.0 * h * focal_length;
         let view_width = view_height * (self.image_width as f64 / self.image_height as f64);
 
         // Calculate the vectors across the horizontal and down the vertical edges

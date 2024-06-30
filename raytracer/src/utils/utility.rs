@@ -4,12 +4,12 @@ use rand::random;
 
 pub const INFINITY: f64 = f64::INFINITY;
 
-pub const _PI: f64 = std::f64::consts::PI;
+pub const PI: f64 = std::f64::consts::PI;
 
 //some utility functions
 
-pub fn _degrees_to_radians(degrees: f64) -> f64 {
-    degrees * _PI / 180.0
+pub fn degrees_to_radians(degrees: f64) -> f64 {
+    degrees * PI / 180.0
 }
 
 pub fn random_double(mn: f64, mx: f64) -> f64 {
