@@ -89,6 +89,13 @@ impl Dielectric {
     pub fn new(refraction_index: f64) -> Dielectric {
         Dielectric { refraction_index }
     }
+
+    fn reflectance(&self, cosine: f64, refraction_index: f64) -> f64 {
+        // Use Schlick's approximation for Fresnel reflection
+        let mut r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
+        r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    }
 }
 
 impl Material for Dielectric {
@@ -112,11 +119,12 @@ impl Material for Dielectric {
 
         //consider full reflection
         let cannot_reflect = ri * sin_theta > 1.0;
-        let direction: Vec3 = if cannot_reflect {
-            reflect(&unit_direction, &rec.normal)
-        } else {
-            refract(&unit_direction, &rec.normal, ri)
-        };
+        let direction: Vec3 =
+            if cannot_reflect || self.reflectance(cos_theta, ri) > rand::random::<f64>() {
+                reflect(&unit_direction, &rec.normal)
+            } else {
+                refract(&unit_direction, &rec.normal, ri)
+            };
 
         *scattered = Ray::new(&rec.p, &direction);
         true
