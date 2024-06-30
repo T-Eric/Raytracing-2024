@@ -4,7 +4,7 @@ use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
 use crate::utils::ray::Ray;
 use crate::utils::utility::INFINITY;
-use crate::utils::vec3::{random_unit_vector, unit_vector, Point3, Vec3};
+use crate::utils::vec3::{unit_vector, Point3, Vec3};
 use rand;
 
 pub struct Camera {
@@ -128,9 +128,19 @@ impl Camera {
             // 1.9 no Lambertian
             // let direction = random_on_hemisphere(&rec.normal);
             // 1.10 Lambertian
-            let direction = rec.normal + random_unit_vector();
-            // let the light reflect, losing 50% every time
-            return Self::ray_color(&Ray::new(&rec.p, &direction), depth - 1, world) * 0.5;
+            // let direction = rec.normal + random_unit_vector();
+            let mut scattered = Ray::default();
+            let mut attenuation = Color::default();
+            return if rec
+                .clone()
+                .mat
+                .unwrap()
+                .scatter(r, &rec, &mut attenuation, &mut scattered)
+            {
+                attenuation * Self::ray_color(&scattered, depth - 1, world)
+            } else {
+                Color::default()
+            };
         }
 
         let unit_direction = unit_vector(r.direction());

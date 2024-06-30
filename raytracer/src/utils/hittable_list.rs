@@ -8,14 +8,6 @@ pub struct HittableList {
     pub objects: Vec<Arc<dyn Hittable>>,
 }
 
-// impl Default for HittableList{
-//     fn default() -> Self {
-//         Self{
-//             objects:Vec::new()
-//         }
-//     }
-// }
-
 impl HittableList {
     pub fn add(&mut self, object: Arc<dyn Hittable>) {
         self.objects.push(object);

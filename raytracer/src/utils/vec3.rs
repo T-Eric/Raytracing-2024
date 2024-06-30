@@ -44,6 +44,20 @@ impl Mul<f64> for Vec3 {
     }
 }
 
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            e: [
+                self.e[0] * rhs.e[0],
+                self.e[1] * rhs.e[1],
+                self.e[2] * rhs.e[2],
+            ],
+        }
+    }
+}
+
 impl Div<f64> for Vec3 {
     type Output = Vec3;
     fn div(self, rhs: f64) -> Self::Output {
@@ -84,6 +98,20 @@ impl Mul<f64> for &Vec3 {
     fn mul(self, rhs: f64) -> Self::Output {
         Vec3 {
             e: [self.e[0] * rhs, self.e[1] * rhs, self.e[2] * rhs],
+        }
+    }
+}
+
+impl Mul<&Vec3> for &Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: &Vec3) -> Self::Output {
+        Vec3 {
+            e: [
+                self.e[0] * rhs.e[0],
+                self.e[1] * rhs.e[1],
+                self.e[2] * rhs.e[2],
+            ],
         }
     }
 }
@@ -191,6 +219,11 @@ impl Vec3 {
     pub fn length(&self) -> f64 {
         self.length_squared().sqrt()
     }
+    pub fn near_zero(&self) -> bool {
+        //True if this vec is close to zero in all dimensions
+        let epsilon = 1e-8;
+        self.e[0].abs() < epsilon && self.e[1].abs() < epsilon && self.e[2].abs() < epsilon
+    }
     pub fn random_in(min: f64, max: f64) -> Self {
         Self {
             e: [
@@ -247,4 +280,8 @@ pub fn _random_on_hemisphere(normal: &Vec3) -> Vec3 {
     } else {
         -on_unit_sphere
     }
+}
+
+pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
+    v - &(n * 2.0 * dot(v, n))
 }

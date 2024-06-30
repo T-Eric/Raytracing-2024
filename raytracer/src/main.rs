@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use crate::utils::color::Color;
+use crate::utils::material::{Lambertian, Metal};
 use utils::camera::Camera;
 use utils::hittable_list::HittableList;
 use utils::sphere::Sphere;
@@ -14,10 +16,31 @@ fn main() {
     let max_recurse_depth = 48;
     // world
     let mut world = HittableList::default();
-    world.add(Arc::new(Sphere::new(&Point3::new(0.0, 0.0, -1.0), 0.5)));
+    //materials
+    let material_ground = Arc::new(Lambertian::new(&Color::new(0.8, 0.8, 0.0)));
+    let material_center = Arc::new(Lambertian::new(&Color::new(0.1, 0.2, 0.5)));
+    let material_left = Arc::new(Metal::new(&Color::new(0.8, 0.8, 0.8)));
+    let material_right = Arc::new(Metal::new(&Color::new(0.8, 0.6, 0.2)));
+
     world.add(Arc::new(Sphere::new(
         &Point3::new(0.0, -100.5, -1.0),
         100.0,
+        Some(material_ground),
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(0.0, 0.0, -1.2),
+        0.5,
+        Some(material_center),
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(-1.0, 0.0, -1.0),
+        0.5,
+        Some(material_left),
+    )));
+    world.add(Arc::new(Sphere::new(
+        &Point3::new(1.0, 0.0, -1.0),
+        0.5,
+        Some(material_right),
     )));
 
     let mut cam = Camera::new(
