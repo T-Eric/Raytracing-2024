@@ -121,7 +121,7 @@ impl Camera {
             return Color::default();
         }
         let mut rec = HitRecord::default();
-        if world.hit(r, &Interval::new(0.0, INFINITY), &mut rec) {
+        if world.hit(r, &Interval::new(0.001, INFINITY), &mut rec) {
             // before 1.6
             // return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
             let direction = random_on_hemisphere(&rec.normal);
