@@ -1,6 +1,7 @@
 use crate::utils::color::Color;
 use crate::utils::hittable::HitRecord;
 use crate::utils::ray::Ray;
+use crate::utils::vec3::refract;
 use crate::utils::vec3::{dot, random_unit_vector, reflect, unit_vector};
 
 pub trait Material {
@@ -22,6 +23,10 @@ pub struct Lambertian {
 pub struct Metal {
     albedo: Color,
     fuzz: f64,
+}
+
+pub struct Dielectric {
+    refraction_index: f64,
 }
 
 impl Lambertian {
@@ -77,5 +82,34 @@ impl Material for Metal {
         *_attenuation = self.albedo.clone();
 
         dot(scattered.direction(), &rec.normal) > 0.0
+    }
+}
+
+impl Dielectric {
+    pub fn new(refraction_index: f64) -> Dielectric {
+        Dielectric { refraction_index }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(
+        &self,
+        r_in: &Ray,
+        rec: &HitRecord,
+        attenuation: &mut Color,
+        scattered: &mut Ray,
+    ) -> bool {
+        *attenuation = Color::new(1.0, 1.0, 1.0);
+        let ri = if rec.front_face {
+            1.0 / self.refraction_index
+        } else {
+            self.refraction_index
+        };
+
+        let unit_direction = unit_vector(r_in.direction());
+        let refracted = refract(&unit_direction, &rec.normal, ri);
+
+        *scattered = Ray::new(&rec.p, &refracted);
+        true
     }
 }

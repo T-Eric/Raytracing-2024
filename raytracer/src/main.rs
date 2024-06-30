@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::utils::color::Color;
-use crate::utils::material::{Lambertian, Metal};
+use crate::utils::material::*;
 use utils::camera::Camera;
 use utils::hittable_list::HittableList;
 use utils::sphere::Sphere;
@@ -19,7 +19,7 @@ fn main() {
     //materials
     let material_ground = Arc::new(Lambertian::new(&Color::new(0.8, 0.8, 0.0)));
     let material_center = Arc::new(Lambertian::new(&Color::new(0.1, 0.2, 0.5)));
-    let material_left = Arc::new(Metal::new(&Color::new(0.8, 0.8, 0.8), 0.3));
+    let material_left = Arc::new(Dielectric::new(1.50));
     let material_right = Arc::new(Metal::new(&Color::new(0.8, 0.6, 0.2), 1.0));
 
     world.add(Arc::new(Sphere::new(
