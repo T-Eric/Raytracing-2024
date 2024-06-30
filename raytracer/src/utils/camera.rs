@@ -18,14 +18,21 @@ pub struct Camera {
     pub image_width: i32,
     pub aspect_ratio: f64,
     pub samples_per_pixel: i32,
+    pub max_recurse_depth: i32,
 }
 
 impl Camera {
-    pub fn new(image_width: i32, aspect_ratio: f64, samples_per_pixel: i32) -> Camera {
+    pub fn new(
+        image_width: i32,
+        aspect_ratio: f64,
+        samples_per_pixel: i32,
+        max_recurse_depth: i32,
+    ) -> Camera {
         Camera {
             image_width,
             aspect_ratio,
             samples_per_pixel,
+            max_recurse_depth,
             image_height: -1,
             center: Point3::default(),
             pixel00_loc: Point3::default(),
@@ -46,7 +53,7 @@ impl Camera {
                 //generate samples rays in one pixel to model more real situation
                 for _sample in 0..self.samples_per_pixel {
                     let r = self.get_ray(i, j);
-                    pixel_color += Self::ray_color(&r, world);
+                    pixel_color += Self::ray_color(&r, self.max_recurse_depth, world);
                 }
                 put_color(&(&pixel_color * self.pixel_samples_scale));
             }
@@ -109,14 +116,17 @@ impl Camera {
     }
 
     //Color painter
-    fn ray_color(r: &Ray, world: &HittableList) -> Color {
+    fn ray_color(r: &Ray, depth: i32, world: &HittableList) -> Color {
+        if depth <= 0 {
+            return Color::default();
+        }
         let mut rec = HitRecord::default();
         if world.hit(r, &Interval::new(0.0, INFINITY), &mut rec) {
             // before 1.6
             // return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
             let direction = random_on_hemisphere(&rec.normal);
             // let the light reflect, losing 50% every time
-            return Self::ray_color(&Ray::new(&rec.p, &direction), world) * 0.5;
+            return Self::ray_color(&Ray::new(&rec.p, &direction), depth - 1, world) * 0.5;
         }
 
         let unit_direction = unit_vector(r.direction());

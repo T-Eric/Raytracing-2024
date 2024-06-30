@@ -11,6 +11,7 @@ fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let samples_per_pixel = 100;
+    let max_recurse_depth = 50;
     // world
     let mut world = HittableList::default();
     world.add(Arc::new(Sphere::new(&Point3::new(0.0, 0.0, -1.0), 0.5)));
@@ -19,6 +20,11 @@ fn main() {
         100.0,
     )));
 
-    let mut cam = Camera::new(image_width, aspect_ratio, samples_per_pixel);
+    let mut cam = Camera::new(
+        image_width,
+        aspect_ratio,
+        samples_per_pixel,
+        max_recurse_depth,
+    );
     cam.render(&world);
 }
