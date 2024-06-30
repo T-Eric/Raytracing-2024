@@ -11,7 +11,7 @@ fn main() {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let samples_per_pixel = 100;
-    let max_recurse_depth = 50;
+    let max_recurse_depth = 48;
     // world
     let mut world = HittableList::default();
     world.add(Arc::new(Sphere::new(&Point3::new(0.0, 0.0, -1.0), 0.5)));
