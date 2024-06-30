@@ -59,7 +59,7 @@ impl Material for Lambertian {
 }
 
 impl Metal {
-    pub fn _new(albedo: &Color, fuzz: f64) -> Self {
+    pub fn new(albedo: &Color, fuzz: f64) -> Self {
         Metal {
             albedo: albedo.clone(),
             fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
@@ -86,7 +86,7 @@ impl Material for Metal {
 }
 
 impl Dielectric {
-    pub fn _new(refraction_index: f64) -> Dielectric {
+    pub fn new(refraction_index: f64) -> Dielectric {
         Dielectric { refraction_index }
     }
 
