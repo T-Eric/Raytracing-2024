@@ -121,6 +121,7 @@ impl Camera {
             return Color::default();
         }
         let mut rec = HitRecord::default();
+
         if world.hit(r, &Interval::new(0.001, INFINITY), &mut rec) {
             // before 1.6
             // return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
@@ -129,7 +130,7 @@ impl Camera {
             // 1.10 Lambertian
             let direction = rec.normal + random_unit_vector();
             // let the light reflect, losing 50% every time
-            return Self::ray_color(&Ray::new(&rec.p, &direction), depth - 1, world) * 0.5;
+            return Self::ray_color(&Ray::new(&rec.p, &direction), depth - 1, world) * 0.1;
         }
 
         let unit_direction = unit_vector(r.direction());
