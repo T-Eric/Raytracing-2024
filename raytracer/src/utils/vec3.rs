@@ -207,7 +207,7 @@ impl Vec3 {
     pub fn z(&self) -> f64 {
         self.e[2]
     }
-    pub fn _get(&self, index: usize) -> Option<f64> {
+    pub fn get(&self, index: usize) -> Option<f64> {
         self.e.get(index).copied()
     }
     pub fn _get_mut(&mut self, index: usize) -> Option<&mut f64> {

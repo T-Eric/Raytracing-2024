@@ -1,3 +1,4 @@
+use crate::utils::aabb::Aabb;
 use crate::utils::interval::Interval;
 use crate::utils::material::Material;
 use crate::utils::ray::Ray;
@@ -41,16 +42,17 @@ impl HitRecord {
         }
     }
 
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: &Vec3) {
-        self.front_face = dot(r.direction(), outward_normal) < 0.0;
+    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: Vec3) {
+        self.front_face = dot(r.direction(), &outward_normal) < 0.0;
         self.normal = if self.front_face {
-            outward_normal.clone()
+            outward_normal
         } else {
-            -outward_normal.clone()
+            -outward_normal
         };
     }
 }
 
 pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, ray_t: &Interval) -> Option<HitRecord>;
+    fn bounding_box(&self) -> &Aabb; //caution: a ref!
 }

@@ -1,3 +1,4 @@
+use crate::utils::aabb::Aabb;
 use crate::utils::hittable::{HitRecord, Hittable};
 use crate::utils::interval::Interval;
 use crate::utils::material::Material;
@@ -11,30 +12,37 @@ pub struct Sphere {
     mat: Arc<dyn Material>,
     is_moving: bool,
     center_vec: Vec3,
+    bbox: Aabb,
 }
 
 impl Sphere {
-    pub fn new_static(center: &Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
+    pub fn new_static(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
+        let _rvec = Vec3::new(radius, radius, radius);
         Sphere {
             center1: center.clone(),
             radius,
             mat,
             is_moving: false,
             center_vec: Vec3::default(),
+            bbox: Aabb::new_diagonal(&center - &_rvec, center + _rvec),
         }
     }
     pub fn new_motive(
-        center1: &Point3,
-        center2: &Point3,
+        center1: Point3,
+        center2: Point3,
         radius: f64,
         mat: Arc<dyn Material>,
     ) -> Sphere {
+        let rvec = Vec3::new(radius, radius, radius);
+        let box1 = Aabb::new_diagonal(&center1 - &rvec, &center1 + &rvec);
+        let box2 = Aabb::new_diagonal(&center2 - &rvec, &center2 + &rvec);
         Sphere {
             center1: center1.clone(),
             radius,
             mat,
             is_moving: true,
             center_vec: center2 - center1,
+            bbox: Aabb::new_aabb(&box1, &box2),
         }
     }
     pub fn sphere_center(&self, time: f64) -> Point3 {
@@ -70,8 +78,12 @@ impl Hittable for Sphere {
         let p = r.at(t);
         let outward_normal = (&p - &center) / self.radius;
         let mut rec = HitRecord::new(&p, &outward_normal, self.mat.clone(), t, false);
-        rec.set_face_normal(r, &outward_normal);
+        rec.set_face_normal(r, outward_normal);
 
         Some(rec)
+    }
+
+    fn bounding_box(&self) -> &Aabb {
+        &self.bbox
     }
 }

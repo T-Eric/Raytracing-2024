@@ -3,6 +3,8 @@ use std::fs;
 use std::path::Path;
 use std::sync::Arc;
 
+use crate::utils::bvh::BvhNode;
+use std::time::Instant;
 use utils::camera::Camera;
 use utils::color::Color;
 use utils::hittable_list::HittableList;
@@ -14,12 +16,13 @@ use utils::vec3::Vec3;
 mod utils;
 
 fn main() -> std::io::Result<()> {
+    let now = Instant::now();
     // world
     let mut world = HittableList::default();
     // materials
     let ground_mat = Arc::new(Lambertian::new(&Color::new(0.5, 0.5, 0.5)));
     world.add(Arc::new(Sphere::new_static(
-        &Point3::new(0.0, -1000.0, 0.0),
+        Point3::new(0.0, -1000.0, 0.0),
         1000.0,
         ground_mat,
     )));
@@ -41,8 +44,8 @@ fn main() -> std::io::Result<()> {
                     let albedo = Color::random() * Color::random();
                     let center2 = &center + &Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
                     world.add(Arc::new(Sphere::new_motive(
-                        &center,
-                        &center2,
+                        center,
+                        center2,
                         0.2,
                         Arc::new(Lambertian::new(&albedo)),
                     )));
@@ -52,8 +55,8 @@ fn main() -> std::io::Result<()> {
                     let fuzz = rand::random::<f64>();
                     let center2 = &center + &Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
                     world.add(Arc::new(Sphere::new_motive(
-                        &center,
-                        &center2,
+                        center,
+                        center2,
                         0.2,
                         Arc::new(Metal::new(&albedo, fuzz)),
                     )));
@@ -61,8 +64,8 @@ fn main() -> std::io::Result<()> {
                     // glass
                     let center2 = &center + &Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
                     world.add(Arc::new(Sphere::new_motive(
-                        &center,
-                        &center2,
+                        center,
+                        center2,
                         0.2,
                         Arc::new(Dielectric::new(1.5)),
                     )));
@@ -73,22 +76,26 @@ fn main() -> std::io::Result<()> {
 
     let material1 = Arc::new(Dielectric::new(1.5));
     world.add(Arc::new(Sphere::new_static(
-        &Point3::new(0.0, 1.0, 0.0),
+        Point3::new(0.0, 1.0, 0.0),
         1.0,
         material1,
     )));
     let material2 = Arc::new(Lambertian::new(&Color::new(0.4, 0.2, 0.1)));
     world.add(Arc::new(Sphere::new_static(
-        &Point3::new(-4.0, 1.0, 0.0),
+        Point3::new(-4.0, 1.0, 0.0),
         1.0,
         material2,
     )));
     let material3 = Arc::new(Metal::new(&Color::new(0.5, 0.6, 0.7), 0.0));
     world.add(Arc::new(Sphere::new_static(
-        &Point3::new(4.0, 1.0, 0.0),
+        Point3::new(4.0, 1.0, 0.0),
         1.0,
         material3,
     )));
+
+    let mut world_ = HittableList::default();
+    world_.add(Arc::new(BvhNode::new_list(&mut world)));
+    let world = world_;
 
     let mut cam = Camera::default();
     cam.aspect_ratio = 16.0 / 9.0;
@@ -105,7 +112,7 @@ fn main() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/1.png");
+    let savefile = savepath.clone() + &*String::from("/0.png");
     let path = Path::new(&savepath);
     if !path.exists() {
         fs::create_dir_all(path)?;
@@ -113,5 +120,8 @@ fn main() -> std::io::Result<()> {
     } else {
         cam.render(world, savefile);
     }
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
     Ok(())
 }

@@ -30,8 +30,14 @@ impl Interval {
             max: other.max,
         }
     }
+    pub fn new_interval(a: &Interval, b: &Interval) -> Interval {
+        Interval {
+            min: a.min.min(b.min),
+            max: a.max.max(b.max),
+        }
+    }
 
-    pub fn _size(&self) -> f64 {
+    pub fn size(&self) -> f64 {
         self.max - self.min
     }
     pub fn _contains(&self, x: f64) -> bool {
@@ -49,11 +55,14 @@ impl Interval {
             x
         }
     }
+    pub fn _expand(&self, delta: f64) -> Interval {
+        Interval::new(self.min - delta / 2.0, self.max + delta / 2.0)
+    }
 }
 //consts
 
 impl Interval {
-    pub const _EMPTY: Interval = Interval {
+    pub const EMPTY: Interval = Interval {
         min: INFINITY,
         max: -INFINITY,
     };

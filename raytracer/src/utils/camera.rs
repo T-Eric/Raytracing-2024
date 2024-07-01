@@ -209,7 +209,7 @@ impl CameraCopy {
         let ray_direction = &pixel_sample - &ray_origin;
         let ray_time = rng.gen_range(0.0..1.0); //send rays in a shutter period
 
-        Ray::new(&ray_origin, &ray_direction, ray_time)
+        Ray::new(ray_origin, ray_direction, ray_time)
     }
 
     //Returns a random point in the camera defocus disk
@@ -236,12 +236,6 @@ fn ray_color(r: &Ray, depth: i32, world: &HittableList) -> Color {
     }
 
     if let Some(rec) = world.hit(r, &Interval::new(0.001, INFINITY)) {
-        // before 1.6
-        // return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
-        // 1.9 no Lambertian
-        // let direction = random_on_hemisphere(&rec.normal);
-        // 1.10 Lambertian
-        // let direction = rec.normal + random_unit_vector();
         return if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
             attenuation * ray_color(&scattered, depth - 1, world)
         } else {
