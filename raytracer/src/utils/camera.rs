@@ -70,7 +70,6 @@ impl Camera {
     // must multi-thread it!
     pub fn render(&mut self, world: HittableList, savefile: String) {
         self.initialize();
-
         // Check environment param
         let progress_bar = if option_env!("CI").unwrap_or_default() == "true" {
             ProgressBar::hidden()
@@ -197,6 +196,7 @@ impl CameraCopy {
     // Construct camera ray from the origin point and directed at randomly sampled
     // point around the pixel (i,j).
     fn get_ray(&self, i: i32, j: i32) -> Ray {
+        let mut rng = rand::thread_rng();
         let offset = sample_square();
         let pixel_sample = &self.pixel00_loc
             + &(&self.pixel_delta_u * (i as f64 + offset.x()))
@@ -207,8 +207,9 @@ impl CameraCopy {
             self.defocus_disk_sample()
         };
         let ray_direction = &pixel_sample - &ray_origin;
+        let ray_time = rng.gen_range(0.0..1.0); //send rays in a shutter period
 
-        Ray::new(&ray_origin, &ray_direction)
+        Ray::new(&ray_origin, &ray_direction, ray_time)
     }
 
     //Returns a random point in the camera defocus disk
