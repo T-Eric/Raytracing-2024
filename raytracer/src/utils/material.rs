@@ -4,14 +4,8 @@ use crate::utils::ray::Ray;
 use crate::utils::vec3::refract;
 use crate::utils::vec3::{dot, random_unit_vector, reflect, unit_vector, Vec3};
 
-pub trait Material {
-    fn scatter(
-        &self,
-        r_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-    ) -> bool;
+pub trait Material: Send + Sync {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>; // attenuation and scattered
 }
 
 // Lambertian material which always do fraction reflection
@@ -38,13 +32,7 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(
-        &self,
-        _r_in: &Ray,
-        rec: &HitRecord,
-        _attenuation: &mut Color,
-        _scattered: &mut Ray,
-    ) -> bool {
+    fn scatter(&self, _r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let mut scatter_direction = &rec.normal + &random_unit_vector();
 
         // Catch degenerate scatter direction
@@ -52,9 +40,9 @@ impl Material for Lambertian {
             scatter_direction = rec.normal.clone();
         }
 
-        *_scattered = Ray::new(&rec.p, &scatter_direction);
-        *_attenuation = self.albedo.clone();
-        true
+        let attenuation = self.albedo.clone();
+        let scattered = Ray::new(&rec.p, &scatter_direction);
+        Some((attenuation, scattered))
     }
 }
 
@@ -68,20 +56,18 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(
-        &self,
-        r_in: &Ray,
-        rec: &HitRecord,
-        _attenuation: &mut Color,
-        scattered: &mut Ray,
-    ) -> bool {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let mut reflected = reflect(r_in.direction(), &rec.normal);
         // fuzz operation
         reflected = unit_vector(&reflected) + (random_unit_vector() * self.fuzz);
-        *scattered = Ray::new(&rec.p, &reflected);
-        *_attenuation = self.albedo.clone();
+        let scattered = Ray::new(&rec.p, &reflected);
+        let attenuation = self.albedo.clone();
 
-        dot(scattered.direction(), &rec.normal) > 0.0
+        if dot(scattered.direction(), &rec.normal) > 0.0 {
+            Some((attenuation, scattered))
+        } else {
+            None
+        }
     }
 }
 
@@ -99,14 +85,8 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(
-        &self,
-        r_in: &Ray,
-        rec: &HitRecord,
-        attenuation: &mut Color,
-        scattered: &mut Ray,
-    ) -> bool {
-        *attenuation = Color::new(1.0, 1.0, 1.0);
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+        let attenuation = Color::new(1.0, 1.0, 1.0);
         let ri = if rec.front_face {
             1.0 / self.refraction_index
         } else {
@@ -126,7 +106,8 @@ impl Material for Dielectric {
                 refract(&unit_direction, &rec.normal, ri)
             };
 
-        *scattered = Ray::new(&rec.p, &direction);
-        true
+        let scattered = Ray::new(&rec.p, &direction);
+
+        Some((attenuation, scattered))
     }
 }

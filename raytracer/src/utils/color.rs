@@ -11,7 +11,7 @@ fn linear_to_gamma(linear_component: f64) -> f64 {
     }
 }
 
-pub fn put_color(pixel_color: &Color) {
+pub fn put_color(pixel_color: &Color) -> (i32, i32, i32) {
     let mut r = pixel_color.x();
     let mut g = pixel_color.y();
     let mut b = pixel_color.z();
@@ -30,5 +30,5 @@ pub fn put_color(pixel_color: &Color) {
     let gbyte = (256.000 * INTENSITY.clamp(g)) as i32;
     let bbyte = (256.000 * INTENSITY.clamp(b)) as i32;
 
-    println!("{rbyte} {gbyte} {bbyte}");
+    (rbyte, gbyte, bbyte)
 }

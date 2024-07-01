@@ -1,4 +1,4 @@
-use crate::utils::utility::random_double;
+use rand::Rng;
 use std::f64;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
@@ -225,11 +225,12 @@ impl Vec3 {
         self.e[0].abs() < epsilon && self.e[1].abs() < epsilon && self.e[2].abs() < epsilon
     }
     pub fn random_in(min: f64, max: f64) -> Self {
+        let mut rng = rand::thread_rng();
         Self {
             e: [
-                random_double(min, max),
-                random_double(min, max),
-                random_double(min, max),
+                rng.gen_range(min..max),
+                rng.gen_range(min..max),
+                rng.gen_range(min..max),
             ],
         }
     }
@@ -262,8 +263,9 @@ pub fn unit_vector(v: &Vec3) -> Vec3 {
 
 // Generate a vec on xy plane
 pub fn random_in_unit_disk() -> Vec3 {
+    let mut rng = rand::thread_rng();
     loop {
-        let p = Vec3::new(random_double(-1.0, 1.0), random_double(-1.0, 1.0), 0.0);
+        let p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
         if p.length_squared() < 1.0 {
             return p;
         }

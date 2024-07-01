@@ -7,21 +7,9 @@ use std::sync::Arc;
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
-    pub mat: Option<Arc<dyn Material>>,
+    pub mat: Arc<dyn Material>,
     pub t: f64,
     pub front_face: bool,
-}
-
-impl Default for HitRecord {
-    fn default() -> Self {
-        HitRecord {
-            p: Point3::default(),
-            normal: Vec3::default(),
-            mat: None,
-            t: -1.0,
-            front_face: false,
-        }
-    }
 }
 
 impl Clone for HitRecord {
@@ -37,10 +25,10 @@ impl Clone for HitRecord {
 }
 
 impl HitRecord {
-    pub fn _new(
+    pub fn new(
         p: &Point3,
         normal: &Vec3,
-        mat: Option<Arc<dyn Material>>,
+        mat: Arc<dyn Material>,
         t: f64,
         front_face: bool,
     ) -> HitRecord {
@@ -63,6 +51,6 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable {
-    fn hit(&self, r: &Ray, ray_t: &Interval, rec: &mut HitRecord) -> bool;
+pub trait Hittable: Send + Sync {
+    fn hit(&self, r: &Ray, ray_t: &Interval) -> Option<HitRecord>;
 }

@@ -1,5 +1,3 @@
-use rand::random;
-
 // some constants
 
 pub const INFINITY: f64 = f64::INFINITY;
@@ -11,9 +9,3 @@ pub const PI: f64 = std::f64::consts::PI;
 pub fn degrees_to_radians(degrees: f64) -> f64 {
     degrees * PI / 180.0
 }
-
-pub fn random_double(mn: f64, mx: f64) -> f64 {
-    mn + (mx - mn) * random::<f64>()
-}
-
-// if u want rand double in [0,1), call random::<f64>() directly

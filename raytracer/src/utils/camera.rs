@@ -1,11 +1,15 @@
 use crate::utils::color::{put_color, Color};
-use crate::utils::hittable::{HitRecord, Hittable};
+use crate::utils::hittable::Hittable;
 use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
 use crate::utils::ray::Ray;
 use crate::utils::utility::{degrees_to_radians, INFINITY};
 use crate::utils::vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3};
-use rand;
+use image::{self, Rgb};
+use indicatif::ProgressBar;
+use rand::Rng;
+use std::sync::{Arc, Mutex};
+use std::thread;
 
 pub struct Camera {
     image_height: i32,
@@ -63,26 +67,89 @@ impl Default for Camera {
 }
 
 impl Camera {
-    pub fn render(&mut self, world: &HittableList) {
+    // must multi-thread it!
+    pub fn render(&mut self, world: HittableList, savefile: String) {
         self.initialize();
-        println!("P3\n{0} {1}\n255", self.image_width, self.image_height);
+
+        // Check environment param
+        let progress_bar = if option_env!("CI").unwrap_or_default() == "true" {
+            ProgressBar::hidden()
+        } else {
+            ProgressBar::new((self.image_height * self.image_width) as u64)
+        };
+
+        let progress_bar = Arc::new(Mutex::new(progress_bar));
+        let imgbuf = image::RgbImage::new(self.image_width as u32, self.image_height as u32);
+        let imgbuf = Arc::new(Mutex::new(imgbuf));
+        let mut thread_lines = vec![];
 
         for j in 0..self.image_height {
-            for i in 0..self.image_width {
-                let mut pixel_color = Color::default();
+            let progress_bar = Arc::clone(&progress_bar);
+            let imgbuf = Arc::clone(&imgbuf);
+            let world = world.clone(); //inside, thus don't consume the param world
+            let self_copy = CameraCopy::new(self);
+            let image_width = self.image_width;
+            let thread_line = thread::spawn(move || {
+                for i in 0..image_width {
+                    let mut pixel_color = Color::default();
+                    for _sample in 0..self_copy.samples_per_pixel {
+                        let r = self_copy.get_ray(i, j);
+                        pixel_color += ray_color(&r, self_copy.max_recurse_depth, &world);
+                    }
+                    pixel_color *= self_copy.pixel_samples_scale;
 
-                //generate samples rays in one pixel to model more real situation
-                for _sample in 0..self.samples_per_pixel {
-                    let r = self.get_ray(i, j);
-                    pixel_color += Self::ray_color(&r, self.max_recurse_depth, world);
+                    let mut imgbuf = imgbuf.lock().unwrap();
+                    let pixel = imgbuf.get_pixel_mut(i as u32, j as u32);
+                    let (r, g, b) = put_color(&pixel_color);
+                    *pixel = Rgb([r as u8, g as u8, b as u8]);
+
+                    let progress_bar = progress_bar.lock().unwrap();
+                    progress_bar.inc(1);
                 }
-                put_color(&(&pixel_color * self.pixel_samples_scale));
-            }
+            }); //self escapes the method body here, all outside params must copy here!
+            thread_lines.push(thread_line);
+        }
+
+        for thread_line in thread_lines {
+            thread_line.join().unwrap();
+        }
+        progress_bar.lock().unwrap().finish();
+        let imgbuf = Arc::try_unwrap(imgbuf).unwrap().into_inner().unwrap();
+        imgbuf.save(savefile).unwrap()
+    }
+}
+
+// Seems that I must make a lite copy struct here, and move some funcs away
+struct CameraCopy {
+    pub samples_per_pixel: i32,
+    pub pixel_samples_scale: f64,
+    pub max_recurse_depth: i32,
+    pub pixel00_loc: Point3,
+    pub pixel_delta_u: Vec3,
+    pub pixel_delta_v: Vec3,
+    pub center: Point3,
+    pub defocus_angle: f64,
+    pub defocus_disk_u: Vec3,
+    pub defocus_disk_v: Vec3,
+}
+
+impl CameraCopy {
+    pub fn new(camera: &Camera) -> Self {
+        Self {
+            samples_per_pixel: camera.samples_per_pixel,
+            pixel_samples_scale: camera.pixel_samples_scale,
+            max_recurse_depth: camera.max_recurse_depth,
+            pixel00_loc: camera.pixel00_loc.clone(),
+            pixel_delta_u: camera.pixel_delta_u.clone(),
+            pixel_delta_v: camera.pixel_delta_v.clone(),
+            center: camera.center.clone(),
+            defocus_angle: camera.defocus_angle,
+            defocus_disk_u: camera.defocus_disk_u.clone(),
+            defocus_disk_v: camera.defocus_disk_v.clone(),
         }
     }
 }
 
-//consts
 impl Camera {
     fn initialize(&mut self) {
         self.image_height = (self.image_width as f64 / self.aspect_ratio) as i32;
@@ -124,20 +191,13 @@ impl Camera {
         self.defocus_disk_u = &self.u * defocus_radius;
         self.defocus_disk_v = &self.v * defocus_radius;
     }
+}
 
-    // A vector to a random point in [-0.5,-0.5]~[0.5,0.5] unit square.
-    fn sample_square() -> Vec3 {
-        Vec3::new(
-            rand::random::<f64>() - 0.5,
-            rand::random::<f64>() - 0.5,
-            0.0,
-        )
-    }
-
+impl CameraCopy {
     // Construct camera ray from the origin point and directed at randomly sampled
     // point around the pixel (i,j).
     fn get_ray(&self, i: i32, j: i32) -> Ray {
-        let offset = Self::sample_square();
+        let offset = sample_square();
         let pixel_sample = &self.pixel00_loc
             + &(&self.pixel_delta_u * (i as f64 + offset.x()))
             + (&self.pixel_delta_v * (j as f64 + offset.y()));
@@ -156,37 +216,40 @@ impl Camera {
         let p = random_in_unit_disk();
         &self.center + &(&self.defocus_disk_u * p.x()) + &self.defocus_disk_v * p.y()
     }
+}
 
-    //Color painter
-    fn ray_color(r: &Ray, depth: i32, world: &HittableList) -> Color {
-        if depth <= 0 {
-            return Color::default();
-        }
-        let mut rec = HitRecord::default();
+// A vector to a random point in [-0.5,-0.5]~[0.5,0.5] unit square.
+fn sample_square() -> Vec3 {
+    let mut rng = rand::thread_rng();
+    Vec3::new(
+        rng.gen_range(0.0..1.0) - 0.5,
+        rng.gen_range(0.0..1.0) - 0.5,
+        0.0,
+    )
+}
 
-        if world.hit(r, &Interval::new(0.001, INFINITY), &mut rec) {
-            // before 1.6
-            // return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
-            // 1.9 no Lambertian
-            // let direction = random_on_hemisphere(&rec.normal);
-            // 1.10 Lambertian
-            // let direction = rec.normal + random_unit_vector();
-            let mut scattered = Ray::default();
-            let mut attenuation = Color::default();
-            return if rec
-                .clone()
-                .mat
-                .unwrap()
-                .scatter(r, &rec, &mut attenuation, &mut scattered)
-            {
-                attenuation * Self::ray_color(&scattered, depth - 1, world)
-            } else {
-                Color::default()
-            };
-        }
-
-        let unit_direction = unit_vector(r.direction());
-        let a = 0.5 * (unit_direction.y() + 1.0);
-        Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
+// Light painter
+fn ray_color(r: &Ray, depth: i32, world: &HittableList) -> Color {
+    if depth <= 0 {
+        return Color::default();
     }
+
+    if let Some(rec) = world.hit(r, &Interval::new(0.001, INFINITY)) {
+        // before 1.6
+        // return (rec.normal + Color::new(1.0, 1.0, 1.0)) * 0.5;
+        // 1.9 no Lambertian
+        // let direction = random_on_hemisphere(&rec.normal);
+        // 1.10 Lambertian
+        // let direction = rec.normal + random_unit_vector();
+        return if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
+            attenuation * ray_color(&scattered, depth - 1, world)
+        } else {
+            Color::default()
+        };
+    }
+
+    // background
+    let unit_direction = unit_vector(r.direction());
+    let a = 0.5 * (unit_direction.y() + 1.0);
+    Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
 }
