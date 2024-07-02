@@ -229,7 +229,7 @@ fn perlin_spheres() -> std::io::Result<()> {
 
     let mut world = HittableList::default();
 
-    let pertext = Arc::new(NoiseTexture::default());
+    let pertext = Arc::new(NoiseTexture::new(4.0));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -257,7 +257,7 @@ fn perlin_spheres() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/11.png");
+    let savefile = savepath.clone() + &*String::from("/12.png");
     let path = Path::new(&savepath);
     if !path.exists() {
         fs::create_dir_all(path)?;

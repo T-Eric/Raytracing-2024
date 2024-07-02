@@ -31,6 +31,7 @@ pub struct ImageTexture {
 #[derive(Default)]
 pub struct NoiseTexture {
     noise: Perlin,
+    scale: f64, // the density
 }
 
 impl SolidColor {
@@ -105,8 +106,17 @@ impl Texture for ImageTexture {
     }
 }
 
+impl NoiseTexture {
+    pub fn new(scale: f64) -> NoiseTexture {
+        NoiseTexture {
+            noise: Perlin::default(),
+            scale,
+        }
+    }
+}
+
 impl Texture for NoiseTexture {
     fn value(&self, _u: f64, _v: f64, p: &Point3) -> Color {
-        Color::new(1.0, 1.0, 1.0) * self.noise.noise(p)
+        Color::new(1.0, 1.0, 1.0) * self.noise.noise(&(p * self.scale))
     }
 }
