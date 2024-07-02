@@ -108,6 +108,7 @@ fn bouncing_spheres() -> std::io::Result<()> {
     cam.image_width = 400;
     cam.samples_per_pixel = 100;
     cam.max_recurse_depth = 50;
+    cam.background = Color::new(0.7, 0.8, 1.0);
 
     cam.vfov = 20.0;
     cam.lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -160,6 +161,7 @@ fn checkered_spheres() -> std::io::Result<()> {
     cam.image_width = 400;
     cam.samples_per_pixel = 100;
     cam.max_recurse_depth = 50;
+    cam.background = Color::new(0.7, 0.8, 1.0);
 
     cam.vfov = 20.0;
     cam.lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -200,6 +202,7 @@ fn earth() -> std::io::Result<()> {
     cam.image_width = 400;
     cam.samples_per_pixel = 100;
     cam.max_recurse_depth = 50;
+    cam.background = Color::new(0.7, 0.8, 1.0);
 
     cam.vfov = 20.0;
     cam.lookfrom = Point3::new(0.0, 0.0, 12.0);
@@ -248,6 +251,7 @@ fn perlin_spheres() -> std::io::Result<()> {
     cam.image_width = 400;
     cam.samples_per_pixel = 100;
     cam.max_recurse_depth = 50;
+    cam.background = Color::new(0.7, 0.8, 1.0);
 
     cam.vfov = 20.0;
     cam.lookfrom = Point3::new(13.0, 2.0, 3.0);
@@ -321,6 +325,7 @@ fn quads() -> std::io::Result<()> {
     cam.image_width = 400;
     cam.samples_per_pixel = 100;
     cam.max_recurse_depth = 50;
+    cam.background = Color::new(0.7, 0.8, 1.0);
 
     cam.vfov = 80.0;
     cam.lookfrom = Point3::new(0.0, 0.0, 9.0);
@@ -346,8 +351,64 @@ fn quads() -> std::io::Result<()> {
     Ok(())
 }
 
+fn simple_light() -> std::io::Result<()> {
+    let now = Instant::now();
+
+    let mut world = HittableList::default();
+
+    let pertext = Arc::new(NoiseTexture::new(4.0));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new_arc(pertext.clone())),
+    )));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new_arc(pertext)),
+    )));
+
+    let difflight = Arc::new(DiffuseLight::new_color(Color::new(4.0, 4.0, 4.0)));
+    world.add(Arc::new(Quad::new(
+        Point3::new(3.0, 1.0, -2.0),
+        Vec3::new(2.0, 0.0, 0.0),
+        Vec3::new(0.0, 2.0, 0.0),
+        difflight,
+    )));
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_recurse_depth = 50;
+
+    cam.vfov = 20.0;
+    cam.lookfrom = Point3::new(26.0, 3.0, 6.0);
+    cam.lookat = Point3::new(0.0, 2.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
+
+    let savepath = String::from("output/book2");
+    let savefile = savepath.clone() + &*String::from("/17.png");
+    let path = Path::new(&savepath);
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+        cam.render(world, savefile);
+    } else {
+        cam.render(world, savefile);
+    }
+
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
+    Ok(())
+}
+
 fn main() {
-    match 5 {
+    match 6 {
         1 => {
             bouncing_spheres().expect("Fail!");
         }
@@ -362,6 +423,9 @@ fn main() {
         }
         5 => {
             quads().expect("Fail!");
+        }
+        6 => {
+            simple_light().expect("Fail!");
         }
         _ => (),
     }

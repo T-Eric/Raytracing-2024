@@ -28,6 +28,7 @@ pub struct Camera {
     pub aspect_ratio: f64,
     pub samples_per_pixel: i32,
     pub max_recurse_depth: i32,
+    pub background: Color,
 
     pub vfov: f64, //vertical view angle
     pub lookfrom: Point3,
@@ -45,12 +46,13 @@ impl Default for Camera {
             aspect_ratio: 16.0 / 9.0,
             samples_per_pixel: 100,
             max_recurse_depth: 50,
+            background: Color::default(),
             vfov: 90.0,
             lookfrom: Point3::default(),
             lookat: Point3::new(0.0, 0.0, -1.0),
             vup: Vec3::new(0.0, 1.0, 0.0),
             defocus_angle: 0.0,
-            focus_dist: 0.0,
+            focus_dist: 10.0,
             image_height: -1,
             center: Point3::default(),
             pixel00_loc: Point3::default(),
@@ -93,7 +95,7 @@ impl Camera {
                     let mut pixel_color = Color::default();
                     for _sample in 0..self_copy.samples_per_pixel {
                         let r = self_copy.get_ray(i, j);
-                        pixel_color += ray_color(&r, self_copy.max_recurse_depth, &world);
+                        pixel_color += self_copy.ray_color(&r, self_copy.max_recurse_depth, &world);
                     }
                     pixel_color *= self_copy.pixel_samples_scale;
 
@@ -120,16 +122,17 @@ impl Camera {
 
 // Seems that I must make a lite copy struct here, and move some funcs away
 struct CameraCopy {
-    pub samples_per_pixel: i32,
-    pub pixel_samples_scale: f64,
-    pub max_recurse_depth: i32,
-    pub pixel00_loc: Point3,
-    pub pixel_delta_u: Vec3,
-    pub pixel_delta_v: Vec3,
-    pub center: Point3,
-    pub defocus_angle: f64,
-    pub defocus_disk_u: Vec3,
-    pub defocus_disk_v: Vec3,
+    samples_per_pixel: i32,
+    pixel_samples_scale: f64,
+    max_recurse_depth: i32,
+    pixel00_loc: Point3,
+    pixel_delta_u: Vec3,
+    pixel_delta_v: Vec3,
+    center: Point3,
+    defocus_angle: f64,
+    defocus_disk_u: Vec3,
+    defocus_disk_v: Vec3,
+    pub background: Color,
 }
 
 impl CameraCopy {
@@ -145,6 +148,7 @@ impl CameraCopy {
             defocus_angle: camera.defocus_angle,
             defocus_disk_u: camera.defocus_disk_u,
             defocus_disk_v: camera.defocus_disk_v,
+            background: camera.background,
         }
     }
 }
@@ -216,6 +220,28 @@ impl CameraCopy {
         let p = random_in_unit_disk();
         self.center + self.defocus_disk_u * p.x() + self.defocus_disk_v * p.y()
     }
+    fn ray_color(&self, r: &Ray, depth: i32, world: &HittableList) -> Color {
+        if depth <= 0 {
+            return Color::default();
+        }
+
+        if let Some(rec) = world.hit(r, &Interval::new(0.001, INFINITY)) {
+            let emission_color = rec.mat.emitted(rec.u, rec.v, &rec.p);
+            if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
+                let scatter_color = attenuation * self.ray_color(&scattered, depth - 1, world);
+                emission_color + scatter_color
+            } else {
+                emission_color
+            }
+        } else {
+            self.background
+        }
+
+        // // old background
+        // let unit_direction = unit_vector(r.direction());
+        // let a = 0.5 * (unit_direction.y() + 1.0);
+        // Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
+    }
 }
 
 // A vector to a random point in [-0.5,-0.5]~[0.5,0.5] unit square.
@@ -226,24 +252,4 @@ fn sample_square() -> Vec3 {
         rng.gen_range(0.0..1.0) - 0.5,
         0.0,
     )
-}
-
-// Light painter
-fn ray_color(r: &Ray, depth: i32, world: &HittableList) -> Color {
-    if depth <= 0 {
-        return Color::default();
-    }
-
-    if let Some(rec) = world.hit(r, &Interval::new(0.001, INFINITY)) {
-        return if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
-            attenuation * ray_color(&scattered, depth - 1, world)
-        } else {
-            Color::default()
-        };
-    }
-
-    // background
-    let unit_direction = unit_vector(r.direction());
-    let a = 0.5 * (unit_direction.y() + 1.0);
-    Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
 }

@@ -3,12 +3,15 @@ use crate::utils::hittable::HitRecord;
 use crate::utils::ray::Ray;
 use crate::utils::texture::SolidColor;
 use crate::utils::texture::Texture;
-use crate::utils::vec3::refract;
-use crate::utils::vec3::{dot, random_unit_vector, reflect, unit_vector, Vec3};
+use crate::utils::vec3::{dot, random_unit_vector, reflect, refract, unit_vector, Point3, Vec3};
 use std::sync::Arc;
-
 pub trait Material: Send + Sync {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>; // attenuation and scattered
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<(Color, Ray)> {
+        None
+    } // attenuation and scattered
+    fn emitted(&self, _u: f64, _v: f64, _p: &Point3) -> Color {
+        Color::default()
+    }
 }
 
 // Lambertian material which always do fraction reflection
@@ -24,6 +27,10 @@ pub struct Metal {
 
 pub struct Dielectric {
     refraction_index: f64,
+}
+
+pub struct DiffuseLight {
+    tex: Arc<dyn Texture>,
 }
 
 impl Lambertian {
@@ -115,5 +122,22 @@ impl Material for Dielectric {
         let scattered = Ray::new(rec.p, direction, r_in.time());
 
         Some((attenuation, scattered))
+    }
+}
+
+impl DiffuseLight {
+    pub fn _new_arc(tex: Arc<dyn Texture>) -> DiffuseLight {
+        DiffuseLight { tex }
+    }
+    pub fn new_color(emit: Color) -> DiffuseLight {
+        DiffuseLight {
+            tex: Arc::new(SolidColor::new_color(emit)),
+        }
+    }
+}
+
+impl Material for DiffuseLight {
+    fn emitted(&self, u: f64, v: f64, p: &Point3) -> Color {
+        self.tex.value(u, v, p)
     }
 }
