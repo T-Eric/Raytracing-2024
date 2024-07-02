@@ -15,26 +15,18 @@ pub struct Aabb {
 
 impl Aabb {
     pub fn _new(x: Interval, y: Interval, z: Interval) -> Aabb {
-        Aabb { x, y, z }
+        let mut ret = Aabb { x, y, z };
+        ret.pad_to_minimums();
+        ret
     }
     pub fn new_diagonal(a: Point3, b: Point3) -> Aabb {
-        Aabb {
-            x: if a.x() < b.x() {
-                Interval::new(a.x(), b.x())
-            } else {
-                Interval::new(b.x(), a.x())
-            },
-            y: if a.y() < b.y() {
-                Interval::new(a.y(), b.y())
-            } else {
-                Interval::new(b.y(), a.y())
-            },
-            z: if a.z() < b.z() {
-                Interval::new(a.z(), b.z())
-            } else {
-                Interval::new(b.z(), a.z())
-            },
-        }
+        let mut ret = Aabb {
+            x: Interval::new(a.x().min(b.x()), a.x().max(b.x())),
+            y: Interval::new(a.y().min(b.y()), a.y().max(b.y())),
+            z: Interval::new(a.z().min(b.z()), a.z().max(b.z())),
+        };
+        ret.pad_to_minimums();
+        ret
     }
     pub fn new_aabb(a: &Aabb, b: &Aabb) -> Aabb {
         Aabb {
@@ -89,6 +81,19 @@ impl Aabb {
             1
         } else {
             2
+        }
+    }
+    fn pad_to_minimums(&mut self) {
+        // not let any interval too small
+        let eps = 0.0001;
+        if self.x.size() < eps {
+            self.x.expand(eps);
+        }
+        if self.y.size() < eps {
+            self.y.expand(eps);
+        }
+        if self.z.size() < eps {
+            self.z.expand(eps);
         }
     }
 }

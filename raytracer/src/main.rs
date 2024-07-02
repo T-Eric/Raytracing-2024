@@ -4,6 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::utils::bvh::BvhNode;
+use crate::utils::quad::Quad;
 use crate::utils::texture::{CheckerTexture, ImageTexture, NoiseTexture};
 use std::time::Instant;
 use utils::camera::Camera;
@@ -272,8 +273,81 @@ fn perlin_spheres() -> std::io::Result<()> {
     Ok(())
 }
 
+fn quads() -> std::io::Result<()> {
+    let now = Instant::now();
+
+    let mut world = HittableList::default();
+
+    let left_red = Arc::new(Lambertian::new_color(Color::new(1.0, 0.2, 0.2)));
+    let back_green = Arc::new(Lambertian::new_color(Color::new(0.2, 1.0, 0.2)));
+    let right_blue = Arc::new(Lambertian::new_color(Color::new(0.2, 0.2, 1.0)));
+    let up_orange = Arc::new(Lambertian::new_color(Color::new(1.0, 0.5, 0.0)));
+    let down_teal = Arc::new(Lambertian::new_color(Color::new(0.2, 0.8, 0.8)));
+
+    world.add(Arc::new(Quad::new(
+        Point3::new(-3.0, -2.0, 5.0),
+        Vec3::new(0.0, 0.0, -4.0),
+        Vec3::new(0.0, 4.0, 0.0),
+        left_red,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(-2.0, -2.0, 0.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 4.0, 0.0),
+        back_green,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(3.0, -2.0, 1.0),
+        Vec3::new(0.0, 0.0, 4.0),
+        Vec3::new(0.0, 4.0, 0.0),
+        right_blue,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(-2.0, 3.0, 1.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 4.0),
+        up_orange,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(-2.0, -3.0, 5.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -4.0),
+        down_teal,
+    )));
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_recurse_depth = 50;
+
+    cam.vfov = 80.0;
+    cam.lookfrom = Point3::new(0.0, 0.0, 9.0);
+    cam.lookat = Point3::default();
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
+
+    let savepath = String::from("output/book2");
+    let savefile = savepath.clone() + &*String::from("/16.png");
+    let path = Path::new(&savepath);
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+        cam.render(world, savefile);
+    } else {
+        cam.render(world, savefile);
+    }
+
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
+    Ok(())
+}
+
 fn main() {
-    match 4 {
+    match 5 {
         1 => {
             bouncing_spheres().expect("Fail!");
         }
@@ -285,6 +359,9 @@ fn main() {
         }
         4 => {
             perlin_spheres().expect("Fail!");
+        }
+        5 => {
+            quads().expect("Fail!");
         }
         _ => (),
     }
