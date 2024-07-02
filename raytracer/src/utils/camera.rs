@@ -138,13 +138,13 @@ impl CameraCopy {
             samples_per_pixel: camera.samples_per_pixel,
             pixel_samples_scale: camera.pixel_samples_scale,
             max_recurse_depth: camera.max_recurse_depth,
-            pixel00_loc: camera.pixel00_loc.clone(),
-            pixel_delta_u: camera.pixel_delta_u.clone(),
-            pixel_delta_v: camera.pixel_delta_v.clone(),
-            center: camera.center.clone(),
+            pixel00_loc: camera.pixel00_loc,
+            pixel_delta_u: camera.pixel_delta_u,
+            pixel_delta_v: camera.pixel_delta_v,
+            center: camera.center,
             defocus_angle: camera.defocus_angle,
-            defocus_disk_u: camera.defocus_disk_u.clone(),
-            defocus_disk_v: camera.defocus_disk_v.clone(),
+            defocus_disk_u: camera.defocus_disk_u,
+            defocus_disk_v: camera.defocus_disk_v,
         }
     }
 }
@@ -169,26 +169,25 @@ impl Camera {
         let view_width = view_height * (self.image_width as f64 / self.image_height as f64);
 
         // Calculate the u,v,w unit basis vectors for the camera coordinate frame
-        self.w = unit_vector(&(&self.lookfrom - &self.lookat));
+        self.w = unit_vector(&(self.lookfrom - self.lookat));
         self.u = unit_vector(&cross(&self.vup, &self.w));
         self.v = cross(&self.w, &self.u);
 
         // Calculate the vectors across the horizontal and down the vertical edges
-        let view_u = &self.u * view_width;
+        let view_u = self.u * view_width;
         let view_v = -&self.v * view_height;
 
         // Calc the delta per pixel
-        self.pixel_delta_u = &view_u / self.image_width as f64;
-        self.pixel_delta_v = &view_v / self.image_height as f64;
+        self.pixel_delta_u = view_u / self.image_width as f64;
+        self.pixel_delta_v = view_v / self.image_height as f64;
 
-        let view_upper_left =
-            &self.center - &(&self.w * self.focus_dist) - view_u / 2.0 - view_v / 2.0;
-        self.pixel00_loc = view_upper_left + (&self.pixel_delta_u + &self.pixel_delta_v) * 0.5;
+        let view_upper_left = self.center - self.w * self.focus_dist - view_u / 2.0 - view_v / 2.0;
+        self.pixel00_loc = view_upper_left + (self.pixel_delta_u + self.pixel_delta_v) * 0.5;
 
         // Calc the defocus disk basis vecs
         let defocus_radius = self.focus_dist * degrees_to_radians(self.defocus_angle / 2.0).tan();
-        self.defocus_disk_u = &self.u * defocus_radius;
-        self.defocus_disk_v = &self.v * defocus_radius;
+        self.defocus_disk_u = self.u * defocus_radius;
+        self.defocus_disk_v = self.v * defocus_radius;
     }
 }
 
@@ -198,15 +197,15 @@ impl CameraCopy {
     fn get_ray(&self, i: i32, j: i32) -> Ray {
         let mut rng = rand::thread_rng();
         let offset = sample_square();
-        let pixel_sample = &self.pixel00_loc
-            + &(&self.pixel_delta_u * (i as f64 + offset.x()))
-            + (&self.pixel_delta_v * (j as f64 + offset.y()));
+        let pixel_sample = self.pixel00_loc
+            + (self.pixel_delta_u * (i as f64 + offset.x()))
+            + (self.pixel_delta_v * (j as f64 + offset.y()));
         let ray_origin = if self.defocus_angle <= 0.0 {
-            self.center.clone()
+            self.center
         } else {
             self.defocus_disk_sample()
         };
-        let ray_direction = &pixel_sample - &ray_origin;
+        let ray_direction = pixel_sample - ray_origin;
         let ray_time = rng.gen_range(0.0..1.0); //send rays in a shutter period
 
         Ray::new(ray_origin, ray_direction, ray_time)
@@ -215,7 +214,7 @@ impl CameraCopy {
     //Returns a random point in the camera defocus disk
     fn defocus_disk_sample(&self) -> Point3 {
         let p = random_in_unit_disk();
-        &self.center + &(&self.defocus_disk_u * p.x()) + &self.defocus_disk_v * p.y()
+        self.center + self.defocus_disk_u * p.x() + self.defocus_disk_v * p.y()
     }
 }
 

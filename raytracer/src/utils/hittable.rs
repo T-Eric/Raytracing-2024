@@ -18,8 +18,8 @@ pub struct HitRecord {
 impl Clone for HitRecord {
     fn clone(&self) -> Self {
         HitRecord {
-            p: self.p.clone(),
-            normal: self.normal.clone(),
+            p: self.p,
+            normal: self.normal,
             mat: self.mat.clone(),
             t: self.t,
             u: self.u,
@@ -40,8 +40,8 @@ impl HitRecord {
         front_face: bool,
     ) -> HitRecord {
         HitRecord {
-            p: p.clone(),
-            normal: normal.clone(),
+            p: *p,
+            normal: *normal,
             mat,
             t,
             u: 0.0,

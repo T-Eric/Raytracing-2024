@@ -43,11 +43,11 @@ fn bouncing_spheres() -> std::io::Result<()> {
                 b as f64 + 0.9 * rng.gen_range(0.0..1.0),
             );
 
-            if (&center - &Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+            if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.75 {
                     // diffuse
                     let albedo = Color::random() * Color::random();
-                    let center2 = &center + &Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
+                    let center2 = center + Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
                     world.add(Arc::new(Sphere::new_motive(
                         center,
                         center2,
@@ -58,16 +58,16 @@ fn bouncing_spheres() -> std::io::Result<()> {
                     // metal
                     let albedo = Color::random_in(0.5, 1.0);
                     let fuzz = rand::random::<f64>();
-                    let center2 = &center + &Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
+                    let center2 = center + Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
                     world.add(Arc::new(Sphere::new_motive(
                         center,
                         center2,
                         0.2,
-                        Arc::new(Metal::new(&albedo, fuzz)),
+                        Arc::new(Metal::new(albedo, fuzz)),
                     )));
                 } else {
                     // glass
-                    let center2 = &center + &Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
+                    let center2 = center + Vec3::new(0.0, rng.gen_range(0.0..0.5), 0.0);
                     world.add(Arc::new(Sphere::new_motive(
                         center,
                         center2,
@@ -91,7 +91,7 @@ fn bouncing_spheres() -> std::io::Result<()> {
         1.0,
         material2,
     )));
-    let material3 = Arc::new(Metal::new(&Color::new(0.5, 0.6, 0.7), 0.0));
+    let material3 = Arc::new(Metal::new(Color::new(0.5, 0.6, 0.7), 0.0));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(4.0, 1.0, 0.0),
         1.0,
@@ -257,7 +257,7 @@ fn perlin_spheres() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/12.png");
+    let savefile = savepath.clone() + &*String::from("/13.png");
     let path = Path::new(&savepath);
     if !path.exists() {
         fs::create_dir_all(path)?;

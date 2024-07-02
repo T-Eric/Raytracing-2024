@@ -18,14 +18,14 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new_static(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
-        let _rvec = Vec3::new(radius, radius, radius);
+        let rvec = Vec3::new(radius, radius, radius);
         Sphere {
-            center1: center.clone(),
+            center1: center,
             radius,
             mat,
             is_moving: false,
             center_vec: Vec3::default(),
-            bbox: Aabb::new_diagonal(&center - &_rvec, center + _rvec),
+            bbox: Aabb::new_diagonal(center - rvec, center + rvec),
         }
     }
     pub fn new_motive(
@@ -35,10 +35,10 @@ impl Sphere {
         mat: Arc<dyn Material>,
     ) -> Sphere {
         let rvec = Vec3::new(radius, radius, radius);
-        let box1 = Aabb::new_diagonal(&center1 - &rvec, &center1 + &rvec);
-        let box2 = Aabb::new_diagonal(&center2 - &rvec, &center2 + &rvec);
+        let box1 = Aabb::new_diagonal(center1 - rvec, center1 + rvec);
+        let box2 = Aabb::new_diagonal(center2 - rvec, center2 + rvec);
         Sphere {
-            center1: center1.clone(),
+            center1,
             radius,
             mat,
             is_moving: true,
@@ -47,7 +47,7 @@ impl Sphere {
         }
     }
     pub fn sphere_center(&self, time: f64) -> Point3 {
-        &self.center1 + &(&self.center_vec * time)
+        self.center1 + (self.center_vec * time)
     }
 
     // ball axis to standard axis
@@ -69,7 +69,7 @@ impl Hittable for Sphere {
         let center = if self.is_moving {
             Self::sphere_center(self, r.time())
         } else {
-            self.center1.clone()
+            self.center1
         };
         let oc = &center - r.origin();
         let a = r.direction().length_squared();
@@ -90,7 +90,7 @@ impl Hittable for Sphere {
         }
         let t = root;
         let p = r.at(t);
-        let outward_normal = (&p - &center) / self.radius;
+        let outward_normal = (p - center) / self.radius;
         let mut rec = HitRecord::new(&p, &outward_normal, self.mat.clone(), t, false);
         (rec.u, rec.v) = Self::get_sphere_uv(&outward_normal);
         rec.set_face_normal(r, outward_normal);

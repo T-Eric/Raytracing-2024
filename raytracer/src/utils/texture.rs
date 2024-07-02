@@ -47,7 +47,7 @@ impl SolidColor {
 
 impl Texture for SolidColor {
     fn value(&self, _u: f64, _v: f64, _p: &Point3) -> Color {
-        self.albedo.clone()
+        self.albedo
     }
 }
 
@@ -116,7 +116,13 @@ impl NoiseTexture {
 }
 
 impl Texture for NoiseTexture {
+    // normal perlin fuzzing
     fn value(&self, _u: f64, _v: f64, p: &Point3) -> Color {
-        Color::new(1.0, 1.0, 1.0) * self.noise.noise(&(p * self.scale))
+        Color::new(1.0, 1.0, 1.0) * 0.5 * (1.0 + self.noise.noise(&(p * self.scale)))
     }
+
+    // with turbulence
+    // fn value(&self, u: f64, v: f64, p: &Point3) -> Color {
+    //     Color::new(1.0,1.0,1.0)*self.noise.turb(p,7)
+    // }
 }

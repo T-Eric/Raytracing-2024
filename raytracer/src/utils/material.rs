@@ -39,23 +39,23 @@ impl Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
-        let mut scatter_direction = &rec.normal + &random_unit_vector();
+        let mut scatter_direction = rec.normal + random_unit_vector();
 
         // Catch degenerate scatter direction
         if scatter_direction.near_zero() {
-            scatter_direction = rec.normal.clone();
+            scatter_direction = rec.normal;
         }
 
         let attenuation = self.tex.value(rec.u, rec.v, &rec.p);
-        let scattered = Ray::new(rec.p.clone(), scatter_direction, r_in.time());
+        let scattered = Ray::new(rec.p, scatter_direction, r_in.time());
         Some((attenuation, scattered))
     }
 }
 
 impl Metal {
-    pub fn new(albedo: &Color, fuzz: f64) -> Self {
+    pub fn new(albedo: Color, fuzz: f64) -> Self {
         Metal {
-            albedo: albedo.clone(),
+            albedo,
             fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
         }
     }
@@ -66,8 +66,8 @@ impl Material for Metal {
         let mut reflected = reflect(r_in.direction(), &rec.normal);
         // fuzz operation
         reflected = unit_vector(&reflected) + (random_unit_vector() * self.fuzz);
-        let scattered = Ray::new(rec.p.clone(), reflected, r_in.time());
-        let attenuation = self.albedo.clone();
+        let scattered = Ray::new(rec.p, reflected, r_in.time());
+        let attenuation = self.albedo;
 
         if dot(scattered.direction(), &rec.normal) > 0.0 {
             Some((attenuation, scattered))
@@ -112,7 +112,7 @@ impl Material for Dielectric {
                 refract(&unit_direction, &rec.normal, ri)
             };
 
-        let scattered = Ray::new(rec.p.clone(), direction, r_in.time());
+        let scattered = Ray::new(rec.p, direction, r_in.time());
 
         Some((attenuation, scattered))
     }

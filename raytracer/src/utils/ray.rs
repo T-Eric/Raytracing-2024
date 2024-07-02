@@ -10,8 +10,8 @@ pub struct Ray {
 impl Clone for Ray {
     fn clone(&self) -> Self {
         Ray {
-            orig: self.orig.clone(),
-            dir: self.dir.clone(),
+            orig: self.orig,
+            dir: self.dir,
             tm: self.tm,
         }
     }
@@ -44,6 +44,6 @@ impl Ray {
 
     // at time t, where is it (dir is the speed)
     pub fn at(&self, t: f64) -> Point3 {
-        &self.orig + &(&self.dir * t)
+        self.orig + self.dir * t
     }
 }

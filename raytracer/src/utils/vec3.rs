@@ -2,7 +2,7 @@ use rand::Rng;
 use std::f64;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy)]
 pub struct Vec3 {
     e: [f64; 3],
 }

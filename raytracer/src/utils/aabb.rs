@@ -53,8 +53,8 @@ impl Aabb {
         }
     }
     pub fn hit(&self, r: &Ray, ray_t: &Interval) -> bool {
-        let ray_orig = r.origin().clone();
-        let ray_dir = r.direction().clone();
+        let ray_orig = r.origin();
+        let ray_dir = r.direction();
         let mut ray_t = ray_t.clone();
 
         for axis in 0..3 {
