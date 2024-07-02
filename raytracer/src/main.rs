@@ -257,7 +257,7 @@ fn perlin_spheres() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/10.png");
+    let savefile = savepath.clone() + &*String::from("/11.png");
     let path = Path::new(&savepath);
     if !path.exists() {
         fs::create_dir_all(path)?;

@@ -41,9 +41,13 @@ impl Perlin {
 
     pub fn noise(&self, p: &Point3) -> f64 {
         // <0 part
-        let u = p.x() - p.x().floor();
-        let v = p.y() - p.y().floor();
-        let w = p.z() - p.z().floor();
+        let mut u = p.x() - p.x().floor();
+        let mut v = p.y() - p.y().floor();
+        let mut w = p.z() - p.z().floor();
+        // hermitian smoothing: cubic round off
+        u = u * u * (3.0 - 2.0 * u);
+        v = v * v * (3.0 - 2.0 * v);
+        w = w * w * (3.0 - 2.0 * w);
 
         // >0 part
         let i = p.x().floor() as i32;
