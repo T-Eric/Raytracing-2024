@@ -1,11 +1,13 @@
 // Paint the surface
 
 use crate::utils::color::Color;
+use crate::utils::image_process::process_pixels;
+use crate::utils::interval::Interval;
 use crate::utils::vec3::Point3;
 use std::sync::Arc;
 
 pub trait Texture: Send + Sync {
-    fn value(&self, u: f64, v: f64, p: &Point3) -> &Color;
+    fn value(&self, u: f64, v: f64, p: &Point3) -> Color;
 }
 
 pub struct SolidColor {
@@ -17,6 +19,12 @@ pub struct CheckerTexture {
     inv_scale: f64,
     even: Arc<dyn Texture>,
     odd: Arc<dyn Texture>,
+}
+
+pub struct ImageTexture {
+    image_width: u32,
+    image_height: u32,
+    image_pixels: Vec<(u8, u8, u8)>,
 }
 
 impl SolidColor {
@@ -31,8 +39,8 @@ impl SolidColor {
 }
 
 impl Texture for SolidColor {
-    fn value(&self, _u: f64, _v: f64, _p: &Point3) -> &Color {
-        &self.albedo
+    fn value(&self, _u: f64, _v: f64, _p: &Point3) -> Color {
+        self.albedo.clone()
     }
 }
 
@@ -47,17 +55,46 @@ impl CheckerTexture {
 }
 
 impl Texture for CheckerTexture {
-    fn value(&self, u: f64, v: f64, p: &Point3) -> &Color {
+    fn value(&self, u: f64, v: f64, p: &Point3) -> Color {
         let (xi, yi, zi) = (
             (self.inv_scale * p.x()).floor() as i32,
             (self.inv_scale * p.y()).floor() as i32,
             (self.inv_scale * p.z()).floor() as i32,
         );
         // is_even?
-        return if (xi + yi + zi) % 2 == 0 {
+        if (xi + yi + zi) % 2 == 0 {
             self.even.value(u, v, p)
         } else {
             self.odd.value(u, v, p)
-        };
+        }
+    }
+}
+
+impl ImageTexture {
+    pub fn new(image_path: &str) -> ImageTexture {
+        let (image_width, image_height, image_pixels) = process_pixels(image_path);
+        ImageTexture {
+            image_width,
+            image_height,
+            image_pixels,
+        }
+    }
+}
+
+impl Texture for ImageTexture {
+    fn value(&self, u: f64, v: f64, _p: &Point3) -> Color {
+        let u = Interval::new(0.0, 1.0).clamp(u);
+        let v = 1.0 - Interval::new(0.0, 1.0).clamp(v); //Flipping v
+
+        let i = (u * self.image_width as f64) as i32;
+        let j = (v * self.image_height as f64) as i32;
+        let pixel = &self.image_pixels[(j as u32 * self.image_width + i as u32) as usize];
+
+        let color_scale = 1.0 / 255.0;
+        Color::new(
+            color_scale * pixel.0 as f64,
+            color_scale * pixel.1 as f64,
+            color_scale * pixel.2 as f64,
+        )
     }
 }

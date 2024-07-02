@@ -4,7 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::utils::bvh::BvhNode;
-use crate::utils::texture::CheckerTexture;
+use crate::utils::texture::{CheckerTexture, ImageTexture};
 use std::time::Instant;
 use utils::camera::Camera;
 use utils::color::Color;
@@ -184,13 +184,56 @@ fn checkered_spheres() -> std::io::Result<()> {
     Ok(())
 }
 
+fn earth() -> std::io::Result<()> {
+    let now = Instant::now();
+    let earth_texture = Arc::new(ImageTexture::new("source/book2/earthmap.jpg"));
+    let earth_surface = Arc::new(Lambertian::new_arc(earth_texture));
+    let globe = Arc::new(Sphere::new_static(Point3::default(), 2.0, earth_surface));
+
+    let mut world = HittableList::default();
+    world.add(globe);
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_recurse_depth = 50;
+
+    cam.vfov = 20.0;
+    cam.lookfrom = Point3::new(0.0, 0.0, 12.0);
+    cam.lookat = Point3::default();
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
+
+    let savepath = String::from("output/book2");
+    let savefile = savepath.clone() + &*String::from("/3.png");
+    let path = Path::new(&savepath);
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+        cam.render(world, savefile);
+    } else {
+        cam.render(world, savefile);
+    }
+
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
+    Ok(())
+}
+
 fn main() {
-    match 2 {
+    match 3 {
         1 => {
             bouncing_spheres().expect("Fail!");
         }
         2 => {
             checkered_spheres().expect("Fail!");
+        }
+        3 => {
+            earth().expect("Fail!");
         }
         _ => (),
     }

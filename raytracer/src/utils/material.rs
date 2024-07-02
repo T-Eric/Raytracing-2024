@@ -48,7 +48,7 @@ impl Material for Lambertian {
 
         let attenuation = self.tex.value(rec.u, rec.v, &rec.p);
         let scattered = Ray::new(rec.p.clone(), scatter_direction, r_in.time());
-        Some((attenuation.clone(), scattered))
+        Some((attenuation, scattered))
     }
 }
 
