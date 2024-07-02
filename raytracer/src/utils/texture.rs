@@ -3,6 +3,7 @@
 use crate::utils::color::Color;
 use crate::utils::image_process::process_pixels;
 use crate::utils::interval::Interval;
+use crate::utils::perlin::Perlin;
 use crate::utils::vec3::Point3;
 use std::sync::Arc;
 
@@ -25,6 +26,11 @@ pub struct ImageTexture {
     image_width: u32,
     image_height: u32,
     image_pixels: Vec<(u8, u8, u8)>,
+}
+
+#[derive(Default)]
+pub struct NoiseTexture {
+    noise: Perlin,
 }
 
 impl SolidColor {
@@ -96,5 +102,11 @@ impl Texture for ImageTexture {
             color_scale * pixel.1 as f64,
             color_scale * pixel.2 as f64,
         )
+    }
+}
+
+impl Texture for NoiseTexture {
+    fn value(&self, _u: f64, _v: f64, p: &Point3) -> Color {
+        Color::new(1.0, 1.0, 1.0) * self.noise.noise(p)
     }
 }

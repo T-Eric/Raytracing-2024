@@ -4,7 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::utils::bvh::BvhNode;
-use crate::utils::texture::{CheckerTexture, ImageTexture};
+use crate::utils::texture::{CheckerTexture, ImageTexture, NoiseTexture};
 use std::time::Instant;
 use utils::camera::Camera;
 use utils::color::Color;
@@ -224,8 +224,56 @@ fn earth() -> std::io::Result<()> {
     Ok(())
 }
 
+fn perlin_spheres() -> std::io::Result<()> {
+    let now = Instant::now();
+
+    let mut world = HittableList::default();
+
+    let pertext = Arc::new(NoiseTexture::default());
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Arc::new(Lambertian::new_arc(pertext.clone())),
+    )));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, 2.0, 0.0),
+        2.0,
+        Arc::new(Lambertian::new_arc(pertext)),
+    )));
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_recurse_depth = 50;
+
+    cam.vfov = 20.0;
+    cam.lookfrom = Point3::new(13.0, 2.0, 3.0);
+    cam.lookat = Point3::default();
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
+
+    let savepath = String::from("output/book2");
+    let savefile = savepath.clone() + &*String::from("/9.png");
+    let path = Path::new(&savepath);
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+        cam.render(world, savefile);
+    } else {
+        cam.render(world, savefile);
+    }
+
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
+    Ok(())
+}
+
 fn main() {
-    match 3 {
+    match 4 {
         1 => {
             bouncing_spheres().expect("Fail!");
         }
@@ -234,6 +282,9 @@ fn main() {
         }
         3 => {
             earth().expect("Fail!");
+        }
+        4 => {
+            perlin_spheres().expect("Fail!");
         }
         _ => (),
     }
