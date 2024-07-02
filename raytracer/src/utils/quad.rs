@@ -6,12 +6,12 @@
 // use crate::utils::vec3::Point3;
 // use crate::utils::vec3::{cross, dot, unit_vector, Vec3};
 // use std::sync::Arc;
-// 
+//
 // pub trait Flat {
 //     fn set_bounding_box(&mut self);
 //     fn is_interior(a: f64, b: f64, rec: &mut HitRecord) -> bool; // judge if a ray hitting flat hits object
 // }
-// 
+//
 // pub struct Quad {
 //     q: Point3, // one diagonal
 //     u: Vec3,
@@ -22,7 +22,7 @@
 //     normal: Vec3,
 //     d: f64, //in Ax+By+Cz=D
 // }
-// 
+//
 // impl Quad {
 //     pub fn new(q: Point3, u: Vec3, v: Vec3, mat: Arc<dyn Material>) -> Quad {
 //         let n = cross(&u, &v);
@@ -50,7 +50,7 @@
 //             &Aabb::new_diagonal(self.q + self.u, self.q + self.v),
 //         );
 //     }
-// 
+//
 //     fn is_interior(a: f64, b: f64, rec: &mut HitRecord) -> bool {
 //         let unit_interval = Interval::new(0.0, 1.0);
 //         // judge if the intersection point is in the quad
@@ -63,7 +63,7 @@
 //         }
 //     }
 // }
-// 
+//
 // impl Hittable for Quad {
 //     fn hit(&self, r: &Ray, ray_t: &Interval) -> Option<HitRecord> {
 //         let denom = dot(&self.normal, r.direction());
@@ -91,7 +91,7 @@
 //             }
 //         }
 //     }
-// 
+//
 //     fn bounding_box(&self) -> &Aabb {
 //         &self.bbox
 //     }

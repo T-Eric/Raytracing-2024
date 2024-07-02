@@ -275,15 +275,15 @@ fn perlin_spheres() -> std::io::Result<()> {
 
 // fn quads() -> std::io::Result<()> {
 //     let now = Instant::now();
-// 
+//
 //     let mut world = HittableList::default();
-// 
+//
 //     let left_red = Arc::new(Lambertian::new_color(Color::new(1.0, 0.2, 0.2)));
 //     let back_green = Arc::new(Lambertian::new_color(Color::new(0.2, 1.0, 0.2)));
 //     let right_blue = Arc::new(Lambertian::new_color(Color::new(0.2, 0.2, 1.0)));
 //     let up_orange = Arc::new(Lambertian::new_color(Color::new(1.0, 0.5, 0.0)));
 //     let down_teal = Arc::new(Lambertian::new_color(Color::new(0.2, 0.8, 0.8)));
-// 
+//
 //     world.add(Arc::new(Quad::new(
 //         Point3::new(-3.0, -2.0, 5.0),
 //         Vec3::new(0.0, 0.0, -4.0),
@@ -314,22 +314,22 @@ fn perlin_spheres() -> std::io::Result<()> {
 //         Vec3::new(0.0, 0.0, -4.0),
 //         down_teal,
 //     )));
-// 
+//
 //     let mut cam = Camera::default();
-// 
+//
 //     cam.aspect_ratio = 1.0;
 //     cam.image_width = 400;
 //     cam.samples_per_pixel = 100;
 //     cam.max_recurse_depth = 50;
-// 
+//
 //     cam.vfov = 80.0;
 //     cam.lookfrom = Point3::new(0.0, 0.0, 9.0);
 //     cam.lookat = Point3::default();
 //     cam.vup = Vec3::new(0.0, 1.0, 0.0);
-// 
+//
 //     cam.defocus_angle = 0.0;
 //     cam.focus_dist = 10.0;
-// 
+//
 //     let savepath = String::from("output/book2");
 //     let savefile = savepath.clone() + &*String::from("/16.png");
 //     let path = Path::new(&savepath);
@@ -339,7 +339,7 @@ fn perlin_spheres() -> std::io::Result<()> {
 //     } else {
 //         cam.render(world, savefile);
 //     }
-// 
+//
 //     let now = now.elapsed().as_millis();
 //     eprintln!();
 //     eprintln!("duration:{:?}ms", now);
