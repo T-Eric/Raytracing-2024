@@ -16,7 +16,7 @@ use utils::vec3::Vec3;
 
 mod utils;
 
-fn main() -> std::io::Result<()> {
+fn bouncing_spheres() -> std::io::Result<()> {
     let now = Instant::now();
     // world
     let mut world = HittableList::default();
@@ -125,8 +125,73 @@ fn main() -> std::io::Result<()> {
     } else {
         cam.render(world, savefile);
     }
+
     let now = now.elapsed().as_millis();
     eprintln!();
     eprintln!("duration:{:?}ms", now);
     Ok(())
+}
+
+fn checkered_spheres() -> std::io::Result<()> {
+    let now = Instant::now();
+    let mut world = HittableList::default();
+
+    let checker = Arc::new(CheckerTexture::new(
+        0.32,
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
+
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, -10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::new_arc(checker.clone())),
+    )));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, 10.0, 0.0),
+        10.0,
+        Arc::new(Lambertian::new_arc(checker)),
+    )));
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_recurse_depth = 50;
+
+    cam.vfov = 20.0;
+    cam.lookfrom = Point3::new(13.0, 2.0, 3.0);
+    cam.lookat = Point3::default();
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
+
+    let savepath = String::from("output/book2");
+    let savefile = savepath.clone() + &*String::from("/3.png");
+    let path = Path::new(&savepath);
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+        cam.render(world, savefile);
+    } else {
+        cam.render(world, savefile);
+    }
+
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
+    Ok(())
+}
+
+fn main() {
+    match 2 {
+        1 => {
+            bouncing_spheres().expect("Fail!");
+        }
+        2 => {
+            checkered_spheres().expect("Fail!");
+        }
+        _ => (),
+    }
 }
