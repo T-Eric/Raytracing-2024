@@ -64,7 +64,7 @@ impl Perlin {
         trilinear_interpolate(c, u, v, w)
     }
 
-    pub fn _turb(&self, p: &Point3, depth: i32) -> f64 {
+    pub fn turb(&self, p: &Point3, depth: i32) -> f64 {
         let mut accum = 0.0;
         let mut p = *p;
         let mut weight = 1.0;
