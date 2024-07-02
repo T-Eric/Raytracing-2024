@@ -14,3 +14,4 @@ pub use crate::utils::sphere;
 pub use crate::utils::texture;
 pub use crate::utils::utility;
 pub use crate::utils::vec3;
+pub use crate::utils::perlin;

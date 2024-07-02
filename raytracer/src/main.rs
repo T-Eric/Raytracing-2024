@@ -186,7 +186,7 @@ fn checkered_spheres() -> std::io::Result<()> {
 
 fn earth() -> std::io::Result<()> {
     let now = Instant::now();
-    let earth_texture = Arc::new(ImageTexture::new("source/book2/earthmap.jpg"));
+    let earth_texture = Arc::new(ImageTexture::new("source/earthmap.jpg"));
     let earth_surface = Arc::new(Lambertian::new_arc(earth_texture));
     let globe = Arc::new(Sphere::new_static(Point3::default(), 2.0, earth_surface));
 
@@ -209,7 +209,7 @@ fn earth() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/3.png");
+    let savefile = savepath.clone() + &*String::from("/5.png");
     let path = Path::new(&savepath);
     if !path.exists() {
         fs::create_dir_all(path)?;
