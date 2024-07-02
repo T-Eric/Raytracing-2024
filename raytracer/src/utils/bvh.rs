@@ -121,9 +121,8 @@ impl Hittable for BvhNode {
     // }
     fn hit(&self, r: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         if !self.bbox.hit(r, ray_t) {
-            return None;
+            return None
         }
-        
         match self.left.hit(r, ray_t) {
             Some(left_rec) => {
                 let right_ray_t = Interval::new(ray_t.min, left_rec.t);
@@ -136,14 +135,12 @@ impl Hittable for BvhNode {
                         }
                     }
                     None => {
-                        // right_hit 未击中，返回 left_rec
                         Some(left_rec)
                     }
                 }
             }
             None => {
-                // left_hit 未击中，不需要调用 right.hit
-                None
+                self.right.hit(r, ray_t)
             }
         }
     }

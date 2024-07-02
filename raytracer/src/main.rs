@@ -37,7 +37,7 @@ fn main() -> std::io::Result<()> {
                 0.2,
                 b as f64 + 0.9 * rng.gen_range(0.0..1.0),
             );
-
+    
             if (&center - &Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.75 {
                     // diffuse
@@ -80,7 +80,7 @@ fn main() -> std::io::Result<()> {
         1.0,
         material1,
     )));
-    let material2 = Arc::new(Lambertian::new(&Color::new(0.4, 0.2, 0.1)));
+    let material2 = Arc::new(Lambertian::new(&Color::new(0.6, 0.3, 0.3)));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
@@ -93,9 +93,9 @@ fn main() -> std::io::Result<()> {
         material3,
     )));
 
-    let mut world_ = HittableList::default();
-    world_.add(Arc::new(BvhNode::new_list(&mut world)));
-    let world = world_;
+    // let mut world_ = HittableList::default();
+    // world_.add(Arc::new(BvhNode::new_list(&mut world)));
+    // let world = world_;
 
     let mut cam = Camera::default();
     cam.aspect_ratio = 16.0 / 9.0;
