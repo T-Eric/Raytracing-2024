@@ -10,6 +10,8 @@ pub struct HitRecord {
     pub normal: Vec3,
     pub mat: Arc<dyn Material>,
     pub t: f64,
+    pub u: f64,
+    pub v: f64,
     pub front_face: bool,
 }
 
@@ -20,6 +22,8 @@ impl Clone for HitRecord {
             normal: self.normal.clone(),
             mat: self.mat.clone(),
             t: self.t,
+            u: self.u,
+            v: self.v,
             front_face: self.front_face,
         }
     }
@@ -31,6 +35,8 @@ impl HitRecord {
         normal: &Vec3,
         mat: Arc<dyn Material>,
         t: f64,
+        // u:f64,
+        // v:f64, // hit position
         front_face: bool,
     ) -> HitRecord {
         HitRecord {
@@ -38,6 +44,8 @@ impl HitRecord {
             normal: normal.clone(),
             mat,
             t,
+            u: 0.0,
+            v: 0.0,
             front_face,
         }
     }

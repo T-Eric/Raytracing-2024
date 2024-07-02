@@ -1,8 +1,11 @@
 use crate::utils::color::Color;
 use crate::utils::hittable::HitRecord;
 use crate::utils::ray::Ray;
+use crate::utils::texture::SolidColor;
+use crate::utils::texture::Texture;
 use crate::utils::vec3::refract;
 use crate::utils::vec3::{dot, random_unit_vector, reflect, unit_vector, Vec3};
+use std::sync::Arc;
 
 pub trait Material: Send + Sync {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>; // attenuation and scattered
@@ -10,7 +13,7 @@ pub trait Material: Send + Sync {
 
 // Lambertian material which always do fraction reflection
 pub struct Lambertian {
-    albedo: Color,
+    tex: Arc<dyn Texture>,
 }
 
 // Metal, full reflection
@@ -24,10 +27,13 @@ pub struct Dielectric {
 }
 
 impl Lambertian {
-    pub fn new(albedo: &Color) -> Self {
+    pub fn new_color(albedo: Color) -> Self {
         Lambertian {
-            albedo: albedo.clone(),
+            tex: Arc::new(SolidColor::new_color(albedo)),
         }
+    }
+    pub fn new_arc(tex: Arc<dyn Texture>) -> Self {
+        Lambertian { tex }
     }
 }
 
@@ -40,9 +46,9 @@ impl Material for Lambertian {
             scatter_direction = rec.normal.clone();
         }
 
-        let attenuation = self.albedo.clone();
+        let attenuation = self.tex.value(rec.u, rec.v, &rec.p);
         let scattered = Ray::new(rec.p.clone(), scatter_direction, r_in.time());
-        Some((attenuation, scattered))
+        Some((attenuation.clone(), scattered))
     }
 }
 

@@ -4,6 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::utils::bvh::BvhNode;
+use crate::utils::texture::CheckerTexture;
 use std::time::Instant;
 use utils::camera::Camera;
 use utils::color::Color;
@@ -20,7 +21,11 @@ fn main() -> std::io::Result<()> {
     // world
     let mut world = HittableList::default();
     // materials
-    let ground_mat = Arc::new(Lambertian::new(&Color::new(0.5, 0.5, 0.5)));
+    let ground_mat = Arc::new(Lambertian::new_arc(Arc::new(CheckerTexture::new(
+        0.32,
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ))));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -37,7 +42,7 @@ fn main() -> std::io::Result<()> {
                 0.2,
                 b as f64 + 0.9 * rng.gen_range(0.0..1.0),
             );
-    
+
             if (&center - &Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
                 if choose_mat < 0.75 {
                     // diffuse
@@ -47,7 +52,7 @@ fn main() -> std::io::Result<()> {
                         center,
                         center2,
                         0.2,
-                        Arc::new(Lambertian::new(&albedo)),
+                        Arc::new(Lambertian::new_color(albedo)),
                     )));
                 } else if choose_mat < 0.9 {
                     // metal
@@ -80,7 +85,7 @@ fn main() -> std::io::Result<()> {
         1.0,
         material1,
     )));
-    let material2 = Arc::new(Lambertian::new(&Color::new(0.6, 0.3, 0.3)));
+    let material2 = Arc::new(Lambertian::new_color(Color::new(0.6, 0.3, 0.3)));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(-4.0, 1.0, 0.0),
         1.0,
@@ -93,9 +98,9 @@ fn main() -> std::io::Result<()> {
         material3,
     )));
 
-    // let mut world_ = HittableList::default();
-    // world_.add(Arc::new(BvhNode::new_list(&mut world)));
-    // let world = world_;
+    let mut world_ = HittableList::default();
+    world_.add(Arc::new(BvhNode::new_list(&mut world)));
+    let world = world_;
 
     let mut cam = Camera::default();
     cam.aspect_ratio = 16.0 / 9.0;
@@ -112,7 +117,7 @@ fn main() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/0.png");
+    let savefile = savepath.clone() + &*String::from("/2.png");
     let path = Path::new(&savepath);
     if !path.exists() {
         fs::create_dir_all(path)?;

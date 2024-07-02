@@ -10,5 +10,6 @@ pub use crate::utils::interval;
 pub use crate::utils::material;
 pub use crate::utils::ray;
 pub use crate::utils::sphere;
+pub use crate::utils::texture;
 pub use crate::utils::utility;
 pub use crate::utils::vec3;

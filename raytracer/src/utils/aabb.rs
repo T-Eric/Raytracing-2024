@@ -15,11 +15,7 @@ pub struct Aabb {
 
 impl Aabb {
     pub fn _new(x: Interval, y: Interval, z: Interval) -> Aabb {
-        Aabb {
-            x,
-            y,
-            z
-        }
+        Aabb { x, y, z }
     }
     pub fn new_diagonal(a: Point3, b: Point3) -> Aabb {
         Aabb {

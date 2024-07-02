@@ -9,10 +9,10 @@ pub struct Ray {
 
 impl Clone for Ray {
     fn clone(&self) -> Self {
-        Ray{
-            orig:self.orig.clone(),
-            dir:self.dir.clone(),
-            tm:self.tm,
+        Ray {
+            orig: self.orig.clone(),
+            dir: self.dir.clone(),
+            tm: self.tm,
         }
     }
 }
