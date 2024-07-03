@@ -493,7 +493,7 @@ fn cornell_box() -> std::io::Result<()> {
 }
 
 fn main() {
-    match 6 {
+    match 7 {
         1 => {
             bouncing_spheres().expect("Fail!");
         }
