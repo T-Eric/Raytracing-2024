@@ -4,6 +4,7 @@ pub use crate::utils::aabb;
 pub use crate::utils::bvh;
 pub use crate::utils::camera;
 pub use crate::utils::color;
+pub use crate::utils::constant_medium;
 pub use crate::utils::hittable;
 pub use crate::utils::hittable_list;
 pub use crate::utils::image_process;

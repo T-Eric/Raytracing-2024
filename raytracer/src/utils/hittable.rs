@@ -6,6 +6,7 @@ use crate::utils::utility::{degrees_to_radians, INFINITY};
 use crate::utils::vec3::{Point3, Vec3, *};
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct HitRecord {
     pub p: Point3,
     pub normal: Vec3,
@@ -14,20 +15,6 @@ pub struct HitRecord {
     pub u: f64,
     pub v: f64,
     pub front_face: bool,
-}
-
-impl Clone for HitRecord {
-    fn clone(&self) -> Self {
-        HitRecord {
-            p: self.p,
-            normal: self.normal,
-            mat: self.mat.clone(),
-            t: self.t,
-            u: self.u,
-            v: self.v,
-            front_face: self.front_face,
-        }
-    }
 }
 
 impl HitRecord {

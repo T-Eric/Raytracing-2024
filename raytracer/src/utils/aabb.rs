@@ -106,10 +106,10 @@ impl Aabb {
         y: Interval::EMPTY,
         z: Interval::EMPTY,
     };
-    pub const _UNIVERSE: Aabb = Aabb {
-        x: Interval::_UNIVERSE,
-        y: Interval::_UNIVERSE,
-        z: Interval::_UNIVERSE,
+    pub const UNIVERSE: Aabb = Aabb {
+        x: Interval::UNIVERSE,
+        y: Interval::UNIVERSE,
+        z: Interval::UNIVERSE,
     };
 }
 

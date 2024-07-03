@@ -76,7 +76,7 @@ impl Interval {
         min: INFINITY,
         max: -INFINITY,
     };
-    pub const _UNIVERSE: Interval = Interval {
+    pub const UNIVERSE: Interval = Interval {
         min: -INFINITY,
         max: INFINITY,
     };
