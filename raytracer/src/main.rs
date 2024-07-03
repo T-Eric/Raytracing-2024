@@ -368,11 +368,16 @@ fn simple_light() -> std::io::Result<()> {
         Arc::new(Lambertian::new_arc(pertext)),
     )));
 
-    let difflight = Arc::new(DiffuseLight::new_color(Color::new(4.0, 4.0, 4.0)));
+    let difflight = Arc::new(DiffuseLight::new_color(Color::new(5.0, 5.0, 5.0)));
     world.add(Arc::new(Quad::new(
         Point3::new(3.0, 1.0, -2.0),
         Vec3::new(2.0, 0.0, 0.0),
         Vec3::new(0.0, 2.0, 0.0),
+        difflight.clone(),
+    )));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(0.0, 7.0, 0.0),
+        2.0,
         difflight,
     )));
 
@@ -392,8 +397,9 @@ fn simple_light() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/17.png");
+    let savefile = savepath.clone() + &*String::from("/18.png");
     let path = Path::new(&savepath);
+    
     if !path.exists() {
         fs::create_dir_all(path)?;
         cam.render(world, savefile);
