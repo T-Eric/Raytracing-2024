@@ -4,7 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::utils::bvh::BvhNode;
-use crate::utils::quad::Quad;
+use crate::utils::quad::{cube, Quad};
 use crate::utils::texture::{CheckerTexture, ImageTexture, NoiseTexture};
 use std::time::Instant;
 use utils::camera::Camera;
@@ -457,8 +457,19 @@ fn cornell_box() -> std::io::Result<()> {
         Point3::new(0.0, 0.0, 555.0),
         Vec3::new(555.0, 0.0, 0.0),
         Vec3::new(0.0, 555.0, 0.0),
-        white,
+        white.clone(),
     )));
+
+    world.add(cube(
+        Point3::new(130.0, 0.0, 65.0),
+        Point3::new(295.0, 165.0, 230.0),
+        white.clone(),
+    ));
+    world.add(cube(
+        Point3::new(265.0, 0.0, 295.0),
+        Point3::new(430.0, 330.0, 460.0),
+        white,
+    ));
 
     let mut cam = Camera::default();
 
@@ -476,7 +487,7 @@ fn cornell_box() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/19.png");
+    let savefile = savepath.clone() + &*String::from("/20.png");
     let path = Path::new(&savepath);
 
     if !path.exists() {
