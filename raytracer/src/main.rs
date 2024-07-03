@@ -399,7 +399,86 @@ fn simple_light() -> std::io::Result<()> {
     let savepath = String::from("output/book2");
     let savefile = savepath.clone() + &*String::from("/18.png");
     let path = Path::new(&savepath);
-    
+
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+        cam.render(world, savefile);
+    } else {
+        cam.render(world, savefile);
+    }
+
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
+    Ok(())
+}
+
+fn cornell_box() -> std::io::Result<()> {
+    let now = Instant::now();
+
+    let mut world = HittableList::default();
+
+    let red = Arc::new(Lambertian::new_color(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new_color(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new_color(Color::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::new_color(Color::new(15.0, 15.0, 15.0)));
+
+    world.add(Arc::new(Quad::new(
+        Point3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        green,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::default(),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        red,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(343.0, 554.0, 332.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -105.0),
+        light,
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::default(),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(555.0, 555.0, 555.0),
+        Vec3::new(-555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -555.0),
+        white.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        white,
+    )));
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 600;
+    cam.samples_per_pixel = 200;
+    cam.max_recurse_depth = 50;
+
+    cam.vfov = 40.0;
+    cam.lookfrom = Point3::new(278.0, 278.0, -800.0);
+    cam.lookat = Point3::new(278.0, 278.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
+
+    let savepath = String::from("output/book2");
+    let savefile = savepath.clone() + &*String::from("/19.png");
+    let path = Path::new(&savepath);
+
     if !path.exists() {
         fs::create_dir_all(path)?;
         cam.render(world, savefile);
@@ -432,6 +511,9 @@ fn main() {
         }
         6 => {
             simple_light().expect("Fail!");
+        }
+        7 => {
+            cornell_box().expect("Fail!");
         }
         _ => (),
     }
