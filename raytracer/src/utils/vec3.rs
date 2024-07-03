@@ -4,7 +4,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 
 #[derive(Debug, PartialEq, Copy)]
 pub struct Vec3 {
-    e: [f64; 3],
+    pub e: [f64; 3],
 }
 
 pub type Point3 = Vec3;
@@ -206,12 +206,6 @@ impl Vec3 {
     }
     pub fn z(&self) -> f64 {
         self.e[2]
-    }
-    pub fn get(&self, index: usize) -> Option<f64> {
-        self.e.get(index).copied()
-    }
-    pub fn _get_mut(&mut self, index: usize) -> Option<&mut f64> {
-        self.e.get_mut(index)
     }
     pub fn length_squared(&self) -> f64 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]

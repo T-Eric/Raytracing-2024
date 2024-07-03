@@ -4,6 +4,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::utils::bvh::BvhNode;
+use crate::utils::hittable::{RotateY, Translate};
 use crate::utils::quad::{cube, Quad};
 use crate::utils::texture::{CheckerTexture, ImageTexture, NoiseTexture};
 use std::time::Instant;
@@ -460,16 +461,23 @@ fn cornell_box() -> std::io::Result<()> {
         white.clone(),
     )));
 
-    world.add(cube(
-        Point3::new(130.0, 0.0, 65.0),
-        Point3::new(295.0, 165.0, 230.0),
+    let box1 = cube(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 330.0, 165.0),
         white.clone(),
-    ));
-    world.add(cube(
-        Point3::new(265.0, 0.0, 295.0),
-        Point3::new(430.0, 330.0, 460.0),
+    );
+    let box1 = Arc::new(RotateY::new(box1, 15.0));
+    let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+    world.add(box1);
+
+    let box2 = cube(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 165.0, 165.0),
         white,
-    ));
+    );
+    let box2 = Arc::new(RotateY::new(box2, -18.0));
+    let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+    world.add(box2);
 
     let mut cam = Camera::default();
 
@@ -487,7 +495,7 @@ fn cornell_box() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/20.png");
+    let savefile = savepath.clone() + &*String::from("/21.png");
     let path = Path::new(&savepath);
 
     if !path.exists() {
