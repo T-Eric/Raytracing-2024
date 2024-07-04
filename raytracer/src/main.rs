@@ -496,7 +496,7 @@ fn cornell_box() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book3");
-    let savefile = savepath.clone() + &*String::from("/7.png");
+    let savefile = savepath.clone() + &*String::from("/8.png");
     let path = Path::new(&savepath);
 
     if !path.exists() {

@@ -245,7 +245,7 @@ impl CameraCopy {
             return Color::default();
         }
         if let Some(rec) = world.hit(r, &Interval::new(0.001, INFINITY)) {
-            let emission_color = rec.mat.emitted(rec.u, rec.v, &rec.p);
+            let emission_color = rec.mat.emitted(r, &rec, rec.u, rec.v, &rec.p);
             if let Some((attenuation, mut scattered, mut pdf)) = rec.mat.scatter(r, &rec) {
                 // hard-code the lights, only for specified light situation
                 let on_light = Point3::new(
