@@ -1,14 +1,17 @@
 use crate::utils::color::Color;
 use crate::utils::hittable::HitRecord;
+// use crate::utils::onb::Onb;
 use crate::utils::ray::Ray;
 use crate::utils::texture::SolidColor;
 use crate::utils::texture::Texture;
 use crate::utils::utility::PI;
-use crate::utils::vec3::{dot, random_unit_vector, reflect, refract, unit_vector, Point3, Vec3};
+use crate::utils::vec3::{
+    dot, random_on_hemisphere, random_unit_vector, reflect, refract, unit_vector, Point3, Vec3,
+};
 use std::sync::Arc;
 
 pub trait Material: Send + Sync {
-    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<(Color, Ray)> {
+    fn scatter(&self, _r_in: &Ray, _rec: &HitRecord) -> Option<(Color, Ray, f64)> {
         None
     } // attenuation and scattered
     fn emitted(&self, _u: f64, _v: f64, _p: &Point3) -> Color {
@@ -54,8 +57,12 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
-        let mut scatter_direction = rec.normal + random_unit_vector();
+    // * from vector
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray, f64)> {
+        // let mut scatter_direction = rec.normal + random_unit_vector();
+
+        // use hemisphere, not full sphere scattering
+        let mut scatter_direction = random_on_hemisphere(&rec.normal);
 
         // Catch degenerate scatter direction
         if scatter_direction.near_zero() {
@@ -64,15 +71,22 @@ impl Material for Lambertian {
 
         let attenuation = self.tex.value(rec.u, rec.v, &rec.p);
         let scattered = Ray::new(rec.p, scatter_direction, r_in.time());
-        Some((attenuation, scattered))
+        Some((attenuation, scattered, 0.0))
     }
-    fn scattering_pdf(&self, _r_in: &Ray, rec: &HitRecord, scattered: &Ray) -> f64 {
-        let cos_theta = dot(&rec.normal, &unit_vector(scattered.direction()));
-        if cos_theta < 0.0 {
-            0.0
-        } else {
-            cos_theta / PI
-        }
+
+    // * from orthonormal basis
+    // fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray, f64)> {
+    //     let mut uvw = Onb::default();
+    //     uvw.build_from_w(&rec.normal);
+    //     let scatter_direction = uvw.local_vec(&random_cosine_direction());
+    //
+    //     let scattered = Ray::new(rec.p, unit_vector(&scatter_direction), r_in.time());
+    //     let attenuation = self.tex.value(rec.u, rec.v, &rec.p);
+    //     let pdf = dot(uvw.w(), scattered.direction()) / PI;
+    //     Some((attenuation, scattered, pdf))
+    // }
+    fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
+        1.0 / (2.0 * PI)
     }
 }
 
@@ -86,7 +100,7 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray, f64)> {
         let mut reflected = reflect(r_in.direction(), &rec.normal);
         // fuzz operation
         reflected = unit_vector(&reflected) + (random_unit_vector() * self.fuzz);
@@ -94,7 +108,7 @@ impl Material for Metal {
         let attenuation = self.albedo;
 
         if dot(scattered.direction(), &rec.normal) > 0.0 {
-            Some((attenuation, scattered))
+            Some((attenuation, scattered, 0.0))
         } else {
             None
         }
@@ -115,7 +129,7 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray, f64)> {
         let attenuation = Color::new(1.0, 1.0, 1.0);
         let ri = if rec.front_face {
             1.0 / self.refraction_index
@@ -138,7 +152,7 @@ impl Material for Dielectric {
 
         let scattered = Ray::new(rec.p, direction, r_in.time());
 
-        Some((attenuation, scattered))
+        Some((attenuation, scattered, 0.0))
     }
 }
 
@@ -171,9 +185,12 @@ impl Isotropic {
 }
 
 impl Material for Isotropic {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray, f64)> {
         let scattered = Ray::new(rec.p, random_unit_vector(), r_in.time());
         let attenuation = self.tex.value(rec.u, rec.v, &rec.p);
-        Some((attenuation, scattered))
+        Some((attenuation, scattered, 1.0 / (4.0 * PI)))
+    }
+    fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
+        1.0 / (4.0 * PI)
     }
 }

@@ -1,3 +1,4 @@
+use crate::utils::utility::PI;
 use rand::Rng;
 use std::f64;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
@@ -279,13 +280,27 @@ pub fn random_unit_vector() -> Vec3 {
     unit_vector(&random_in_unit_sphere())
 }
 
-pub fn _random_on_hemisphere(normal: &Vec3) -> Vec3 {
+pub fn random_on_hemisphere(normal: &Vec3) -> Vec3 {
     let on_unit_sphere = random_unit_vector();
     if dot(&on_unit_sphere, normal) > 0.0 {
         on_unit_sphere
     } else {
         -on_unit_sphere
     }
+}
+
+pub fn _random_cosine_direction() -> Vec3 {
+    // sphere coordination
+    let mut rng = rand::thread_rng();
+    let r1 = rng.gen_range(0.0..1.0);
+    let r2: f64 = rng.gen_range(0.0..1.0);
+
+    let phi = 2.0 * PI * r1;
+    let x = phi.cos() * r2.sqrt();
+    let y = phi.sin() * r2.sqrt();
+    let z = (1.0 - r2).sqrt();
+
+    Vec3::new(x, y, z)
 }
 
 pub fn reflect(v: &Vec3, n: &Vec3) -> Vec3 {
