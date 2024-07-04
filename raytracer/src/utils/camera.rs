@@ -135,7 +135,7 @@ impl Camera {
 
 // Seems that I must make a lite copy struct here, and move some funcs away
 struct CameraCopy {
-    pixel_samples_scale:f64,
+    pixel_samples_scale: f64,
     sqrt_spp: i32,
     recip_sqrt_spp: f64,
     max_recurse_depth: i32,
@@ -152,7 +152,7 @@ struct CameraCopy {
 impl CameraCopy {
     pub fn new(camera: &Camera) -> Self {
         Self {
-            pixel_samples_scale:camera.pixel_samples_scale,
+            pixel_samples_scale: camera.pixel_samples_scale,
             sqrt_spp: camera.sqrt_spp,
             recip_sqrt_spp: camera.recip_sqrt_spp,
             max_recurse_depth: camera.max_recurse_depth,
