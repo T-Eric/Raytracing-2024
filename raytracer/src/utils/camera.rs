@@ -4,7 +4,7 @@ use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
 use crate::utils::ray::Ray;
 use crate::utils::utility::{degrees_to_radians, INFINITY};
-use crate::utils::vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3};
+use crate::utils::vec3::{cross, dot, random_in_unit_disk, unit_vector, Point3, Vec3};
 use image::{self, Rgb};
 use indicatif::ProgressBar;
 use rand::rngs::ThreadRng;
@@ -240,39 +240,39 @@ impl CameraCopy {
         self.center + self.defocus_disk_u * p.x() + self.defocus_disk_v * p.y()
     }
     fn ray_color(&self, r: &Ray, depth: i32, world: &HittableList) -> Color {
-        // let mut rng = rand::thread_rng();
+        let mut rng = rand::thread_rng();
         if depth <= 0 {
             return Color::default();
         }
         if let Some(rec) = world.hit(r, &Interval::new(0.001, INFINITY)) {
             let emission_color = rec.mat.emitted(rec.u, rec.v, &rec.p);
-            if let Some((attenuation, scattered, mut pdf)) = rec.mat.scatter(r, &rec) {
-                // // hard-code the lights, only for specified light situation
-                // let on_light = Point3::new(
-                //     rng.gen_range(213.0..343.0),
-                //     554.0,
-                //     rng.gen_range(227.0..332.0),
-                // );
-                // let mut to_light = on_light - rec.p;
-                // let dist_sqared = to_light.length_squared();
-                // to_light = unit_vector(&to_light);
-                //
-                // if dot(&to_light, &rec.normal) < 0.0 {
-                //     return emission_color;
-                // }
-                //
-                // let light_area = ((343 - 213) * (332 - 227)) as f64;
-                // let light_cosine = to_light.y().abs();
-                // if light_cosine < 0.000001 {
-                //     return emission_color;
-                // }
-                //
-                // pdf = dist_sqared / (light_cosine * light_area);
-                // scattered = Ray::new(rec.p, to_light, r.time());
-                //
-                // let scatter_pdf = rec.mat.scattering_pdf(r, &rec, &scattered);
+            if let Some((attenuation, mut scattered, mut pdf)) = rec.mat.scatter(r, &rec) {
+                // hard-code the lights, only for specified light situation
+                let on_light = Point3::new(
+                    rng.gen_range(213.0..343.0),
+                    554.0,
+                    rng.gen_range(227.0..332.0),
+                );
+                let mut to_light = on_light - rec.p;
+                let dist_sqared = to_light.length_squared();
+                to_light = unit_vector(&to_light);
+
+                if dot(&to_light, &rec.normal) < 0.0 {
+                    return emission_color;
+                }
+
+                let light_area = ((343 - 213) * (332 - 227)) as f64;
+                let light_cosine = to_light.y().abs();
+                if light_cosine < 0.000001 {
+                    return emission_color;
+                }
+
+                pdf = dist_sqared / (light_cosine * light_area);
+                scattered = Ray::new(rec.p, to_light, r.time());
+
                 let scatter_pdf = rec.mat.scattering_pdf(r, &rec, &scattered);
-                pdf = scatter_pdf;
+                // let scatter_pdf = rec.mat.scattering_pdf(r, &rec, &scattered);
+                // pdf = scatter_pdf;
 
                 let scatter_color =
                     self.ray_color(&scattered, depth - 1, world) * attenuation * scatter_pdf / pdf;
