@@ -3,7 +3,7 @@ use crate::utils::hittable::Hittable;
 use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
 use crate::utils::ray::Ray;
-use crate::utils::utility::{degrees_to_radians, INFINITY};
+use crate::utils::utility::{degrees_to_radians, INFINITY, PI};
 use crate::utils::vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3};
 use image::{self, Rgb};
 use indicatif::ProgressBar;
@@ -246,7 +246,12 @@ impl CameraCopy {
         if let Some(rec) = world.hit(r, &Interval::new(0.001, INFINITY)) {
             let emission_color = rec.mat.emitted(rec.u, rec.v, &rec.p);
             if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
-                let scatter_color = attenuation * self.ray_color(&scattered, depth - 1, world);
+                // let scatter_color = attenuation * self.ray_color(&scattered, depth - 1, world);
+                let scatter_pdf = rec.mat.scattering_pdf(r, &rec, &scattered);
+                let pdf = 1.0 / (2.0 * PI);
+                let scatter_color =
+                    self.ray_color(&scattered, depth - 1, world) * attenuation * scatter_pdf / pdf;
+
                 emission_color + scatter_color
             } else {
                 emission_color
