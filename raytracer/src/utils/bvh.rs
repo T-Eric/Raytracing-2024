@@ -123,21 +123,37 @@ impl Hittable for BvhNode {
         if !self.bbox.hit(r, ray_t) {
             return None;
         }
-        match self.left.hit(r, ray_t) {
-            Some(left_rec) => {
-                let right_ray_t = Interval::new(ray_t.min, left_rec.t);
-                match self.right.hit(r, &right_ray_t) {
-                    Some(right_rec) => {
-                        if right_rec.t < left_rec.t {
-                            Some(right_rec)
-                        } else {
-                            Some(left_rec)
-                        }
-                    }
-                    None => Some(left_rec),
+        // match self.left.hit(r, ray_t) {
+        //     Some(left_rec) => {
+        //         let right_ray_t = Interval::new(ray_t.min, left_rec.t);
+        //         match self.right.hit(r, &right_ray_t) {
+        //             Some(right_rec) => {
+        //                 if right_rec.t < left_rec.t {
+        //                     Some(right_rec)
+        //                 } else {
+        //                     Some(left_rec)
+        //                 }
+        //             }
+        //             None => Some(left_rec),
+        //         }
+        //     }
+        //     None => self.right.hit(r, ray_t),
+        // }
+        let left = self.left.hit(r, ray_t);
+        let right = self.right.hit(r, ray_t);
+        match (left.is_some(), right.is_some()) {
+            (true, true) => {
+                let l = left.clone();
+                let r = right.clone();
+                if l.unwrap().t < r.unwrap().t {
+                    left
+                } else {
+                    right
                 }
             }
-            None => self.right.hit(r, ray_t),
+            (true, false) => left,
+            (false, true) => right,
+            (false, false) => None,
         }
     }
 

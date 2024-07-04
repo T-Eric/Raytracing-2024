@@ -145,6 +145,5 @@ pub fn cube(a: Point3, b: Point3, mat: Arc<dyn Material>) -> Arc<HittableList> {
         mat,
     )));
 
-    // Arc::new(sides)
     Arc::new(sides)
 }

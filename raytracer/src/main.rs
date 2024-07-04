@@ -107,7 +107,7 @@ fn bouncing_spheres() -> std::io::Result<()> {
 
     let mut cam = Camera::default();
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 400;
+    cam.image_width = 300;
     cam.samples_per_pixel = 100;
     cam.max_recurse_depth = 50;
     cam.background = Color::new(0.7, 0.8, 1.0);
@@ -121,7 +121,7 @@ fn bouncing_spheres() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/2.png");
+    let savefile = savepath.clone() + &*String::from("/99.png");
     let path = Path::new(&savepath);
     if !path.exists() {
         fs::create_dir_all(path)?;
@@ -484,7 +484,7 @@ fn cornell_box() -> std::io::Result<()> {
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 600;
-    cam.samples_per_pixel = 200;
+    cam.samples_per_pixel = 64;
     cam.max_recurse_depth = 50;
 
     cam.vfov = 40.0;
@@ -495,8 +495,8 @@ fn cornell_box() -> std::io::Result<()> {
     cam.defocus_angle = 0.0;
     cam.focus_dist = 10.0;
 
-    let savepath = String::from("output/book2");
-    let savefile = savepath.clone() + &*String::from("/21.png");
+    let savepath = String::from("output/book3");
+    let savefile = savepath.clone() + &*String::from("/1.png");
     let path = Path::new(&savepath);
 
     if !path.exists() {
@@ -704,12 +704,12 @@ fn final_scene(
     let emat = Arc::new(Lambertian::new_arc(Arc::new(ImageTexture::new(
         "source/earthmap.jpg",
     ))));
+    let pertext = Arc::new(NoiseTexture::new(0.2));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(400.0, 200.0, 400.0),
         100.0,
         emat,
     )));
-    let pertext = Arc::new(NoiseTexture::new(0.2));
     world.add(Arc::new(Sphere::new_static(
         Point3::new(220.0, 280.0, 300.0),
         80.0,
@@ -763,7 +763,7 @@ fn final_scene(
 }
 
 fn main() {
-    match 10 {
+    match 7 {
         1 => {
             bouncing_spheres().expect("Fail!");
         }
@@ -788,7 +788,9 @@ fn main() {
         8 => {
             cornell_smoke().expect("Fail!");
         }
-        9 => final_scene(800, 10000, 40).expect("Fail!"),
+        9 => {
+            final_scene(800, 10000, 40).expect("Fail!");
+        }
         10 => {
             final_scene(300, 100, 4).expect("Fail!");
         }

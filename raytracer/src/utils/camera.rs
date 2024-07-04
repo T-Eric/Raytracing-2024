@@ -7,6 +7,7 @@ use crate::utils::utility::{degrees_to_radians, INFINITY};
 use crate::utils::vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3};
 use image::{self, Rgb};
 use indicatif::ProgressBar;
+use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -18,6 +19,8 @@ pub struct Camera {
     pixel_delta_u: Vec3,
     pixel_delta_v: Vec3,
     pixel_samples_scale: f64, // Color scale factor for a sum of pixel samples
+    sqrt_spp: i32,            // sqrt of samples per pixel
+    recip_sqrt_spp: f64,      // 1/sqrt_spp
     u: Vec3,
     v: Vec3,
     w: Vec3, //Camera frame basis vecs
@@ -59,6 +62,8 @@ impl Default for Camera {
             pixel_delta_v: Vec3::default(),
             pixel_delta_u: Vec3::default(),
             pixel_samples_scale: -1.0,
+            sqrt_spp: 0,
+            recip_sqrt_spp: 0.0,
             u: Vec3::default(),
             v: Vec3::default(),
             w: Vec3::default(),
@@ -93,10 +98,18 @@ impl Camera {
             let thread_line = thread::spawn(move || {
                 for i in 0..image_width {
                     let mut pixel_color = Color::default();
-                    for _sample in 0..self_copy.samples_per_pixel {
-                        let r = self_copy.get_ray(i, j);
-                        pixel_color += self_copy.ray_color(&r, self_copy.max_recurse_depth, &world);
+
+                    for s_j in 0..self_copy.sqrt_spp {
+                        for s_i in 0..self_copy.sqrt_spp {
+                            let r = self_copy.get_ray(i, j, s_i, s_j);
+                            pixel_color +=
+                                self_copy.ray_color(&r, self_copy.max_recurse_depth, &world);
+                        }
                     }
+                    // for _sample in 0..self_copy.samples_per_pixel {
+                    //     let r = self_copy.get_ray(i, j);
+                    //     pixel_color += self_copy.ray_color(&r, self_copy.max_recurse_depth, &world);
+                    // }
                     pixel_color *= self_copy.pixel_samples_scale;
 
                     let mut imgbuf = imgbuf.lock().unwrap();
@@ -122,8 +135,9 @@ impl Camera {
 
 // Seems that I must make a lite copy struct here, and move some funcs away
 struct CameraCopy {
-    samples_per_pixel: i32,
-    pixel_samples_scale: f64,
+    pixel_samples_scale:f64,
+    sqrt_spp: i32,
+    recip_sqrt_spp: f64,
     max_recurse_depth: i32,
     pixel00_loc: Point3,
     pixel_delta_u: Vec3,
@@ -138,8 +152,9 @@ struct CameraCopy {
 impl CameraCopy {
     pub fn new(camera: &Camera) -> Self {
         Self {
-            samples_per_pixel: camera.samples_per_pixel,
-            pixel_samples_scale: camera.pixel_samples_scale,
+            pixel_samples_scale:camera.pixel_samples_scale,
+            sqrt_spp: camera.sqrt_spp,
+            recip_sqrt_spp: camera.recip_sqrt_spp,
             max_recurse_depth: camera.max_recurse_depth,
             pixel00_loc: camera.pixel00_loc,
             pixel_delta_u: camera.pixel_delta_u,
@@ -163,6 +178,8 @@ impl Camera {
         };
 
         self.pixel_samples_scale = 1.0 / self.samples_per_pixel as f64;
+        self.sqrt_spp = (self.samples_per_pixel as f64).sqrt() as i32;
+        self.recip_sqrt_spp = 1.0 / self.sqrt_spp as f64;
 
         self.center = Vec3::copy(&self.lookfrom);
 
@@ -198,9 +215,11 @@ impl Camera {
 impl CameraCopy {
     // Construct camera ray from the origin point and directed at randomly sampled
     // point around the pixel (i,j).
-    fn get_ray(&self, i: i32, j: i32) -> Ray {
+    fn get_ray(&self, i: i32, j: i32, s_i: i32, s_j: i32) -> Ray {
         let mut rng = rand::thread_rng();
-        let offset = sample_square();
+        // new changes: we stratify one pixel, and make the samples
+        // distribute more averagely
+        let offset = self.sample_square_stratified(s_i, s_j, &mut rng);
         let pixel_sample = self.pixel00_loc
             + (self.pixel_delta_u * (i as f64 + offset.x()))
             + (self.pixel_delta_v * (j as f64 + offset.y()));
@@ -224,7 +243,6 @@ impl CameraCopy {
         if depth <= 0 {
             return Color::default();
         }
-
         if let Some(rec) = world.hit(r, &Interval::new(0.001, INFINITY)) {
             let emission_color = rec.mat.emitted(rec.u, rec.v, &rec.p);
             if let Some((attenuation, scattered)) = rec.mat.scatter(r, &rec) {
@@ -235,17 +253,23 @@ impl CameraCopy {
             }
         } else {
             self.background
+            // old background
+            // let unit_direction = unit_vector(r.direction());
+            // let a = 0.5 * (unit_direction.y() + 1.0);
+            // Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
         }
+    }
 
-        // // old background
-        // let unit_direction = unit_vector(r.direction());
-        // let a = 0.5 * (unit_direction.y() + 1.0);
-        // Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
+    fn sample_square_stratified(&self, s_i: i32, s_j: i32, rng: &mut ThreadRng) -> Vec3 {
+        // return a vec to the specified sub-pixel
+        let px = (s_i as f64 + rng.gen_range(0.0..1.0)) * self.recip_sqrt_spp - 0.5;
+        let py = (s_j as f64 + rng.gen_range(0.0..1.0)) * self.recip_sqrt_spp - 0.5;
+        Vec3::new(px, py, 0.0)
     }
 }
 
 // A vector to a random point in [-0.5,-0.5]~[0.5,0.5] unit square.
-fn sample_square() -> Vec3 {
+fn _sample_square() -> Vec3 {
     let mut rng = rand::thread_rng();
     Vec3::new(
         rng.gen_range(0.0..1.0) - 0.5,
