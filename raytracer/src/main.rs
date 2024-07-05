@@ -92,13 +92,13 @@ fn cornell_box() -> std::io::Result<()> {
         Point3::new(343.0, 554.0, 332.0),
         Vec3::new(-130.0, 0.0, 0.0),
         Vec3::new(0.0, 0.0, -105.0),
+        m.clone(),
+    )));
+    lights.add(Arc::new(Sphere::new_static(
+        Point3::new(190.0, 90.0, 190.0),
+        90.0,
         m,
     )));
-    // lights.add(Arc::new(Sphere::new_static(
-    //     Point3::new(190.0, 90.0, 190.0),
-    //     90.0,
-    //     m,
-    // )));
     let lights = Arc::new(lights);
 
     let mut cam = Camera::default();
@@ -117,7 +117,7 @@ fn cornell_box() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book3");
-    let savefile = savepath.clone() + &*String::from("/13.png");
+    let savefile = savepath.clone() + &*String::from("/15.png");
     let path = Path::new(&savepath);
 
     if !path.exists() {
