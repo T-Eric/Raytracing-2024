@@ -1,5 +1,6 @@
 use crate::utils::hittable::{RotateY, Translate};
 use crate::utils::quad::{cube, Quad};
+use crate::utils::sphere::Sphere;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -10,6 +11,7 @@ use utils::hittable_list::HittableList;
 use utils::material::*;
 use utils::vec3::Point3;
 use utils::vec3::Vec3;
+
 mod utils;
 fn cornell_box() -> std::io::Result<()> {
     let now = Instant::now();
@@ -61,33 +63,49 @@ fn cornell_box() -> std::io::Result<()> {
     let box1 = cube(
         Point3::new(0.0, 0.0, 0.0),
         Point3::new(165.0, 330.0, 165.0),
-        Arc::new(Metal::new(Color::new(0.8, 0.85, 0.88), 0.0)),
+        // Arc::new(Metal::new(Color::new(0.8, 0.85, 0.88), 0.0)),
+        white,
     ); // material=aluminum
     let box1 = Arc::new(RotateY::new(box1, 15.0));
     let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
     world.add(box1);
 
-    let box2 = cube(
-        Point3::new(0.0, 0.0, 0.0),
-        Point3::new(165.0, 165.0, 165.0),
-        white,
-    );
-    let box2 = Arc::new(RotateY::new(box2, -18.0));
-    let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
-    world.add(box2);
+    // let box2 = cube(
+    //     Point3::new(0.0, 0.0, 0.0),
+    //     Point3::new(165.0, 165.0, 165.0),
+    //     white,
+    // );
+    // let box2 = Arc::new(RotateY::new(box2, -18.0));
+    // let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
+    // world.add(box2);
 
-    let lights = Arc::new(Quad::new(
+    let glass = Arc::new(Dielectric::new(1.5));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(190.0, 90.0, 190.0),
+        90.0,
+        glass,
+    )));
+
+    let mut lights = HittableList::default();
+    let m = Arc::new(Lambertian::new_color(Color::default()));
+    lights.add(Arc::new(Quad::new(
         Point3::new(343.0, 554.0, 332.0),
         Vec3::new(-130.0, 0.0, 0.0),
         Vec3::new(0.0, 0.0, -105.0),
-        Arc::new(Lambertian::new_color(Color::default())),
-    ));
+        m.clone(),
+    )));
+    lights.add(Arc::new(Sphere::new_static(
+        Point3::new(190.0, 90.0, 190.0),
+        90.0,
+        m,
+    )));
+    let lights = Arc::new(lights);
 
     let mut cam = Camera::default();
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 600;
-    cam.samples_per_pixel = 900;
+    cam.samples_per_pixel = 1024;
     cam.max_recurse_depth = 50;
 
     cam.vfov = 40.0;
@@ -99,7 +117,7 @@ fn cornell_box() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book3");
-    let savefile = savepath.clone() + &*String::from("/12.png");
+    let savefile = savepath.clone() + &*String::from("/14.png");
     let path = Path::new(&savepath);
 
     if !path.exists() {

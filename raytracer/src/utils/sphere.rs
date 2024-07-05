@@ -2,9 +2,11 @@ use crate::utils::aabb::Aabb;
 use crate::utils::hittable::{HitRecord, Hittable};
 use crate::utils::interval::Interval;
 use crate::utils::material::Material;
+use crate::utils::onb::Onb;
 use crate::utils::ray::Ray;
-use crate::utils::utility::PI;
+use crate::utils::utility::{INFINITY, PI};
 use crate::utils::vec3::*;
+use rand::Rng;
 use std::sync::Arc;
 
 pub struct Sphere {
@@ -17,7 +19,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn _new_static(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
+    pub fn new_static(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
         let rvec = Vec3::new(radius, radius, radius);
         Sphere {
             center1: center,
@@ -97,8 +99,42 @@ impl Hittable for Sphere {
 
         Some(rec)
     }
-
     fn bounding_box(&self) -> &Aabb {
         &self.bbox
     }
+    fn pdf_value(&self, origin: &Point3, direction: &Vec3) -> f64 {
+        // only for static spheres
+        if let Some(_rec) = self.hit(
+            &Ray::new(*origin, *direction, 0.0),
+            &Interval::new(0.001, INFINITY),
+        ) {
+            let cos_theta_max = (1.0
+                - self.radius * self.radius / (&self.center1 - origin).length_squared())
+            .sqrt();
+            let solid_angle = 2.0 * PI * (1.0 - cos_theta_max);
+            1.0 / solid_angle
+        } else {
+            0.0
+        }
+    }
+    fn random(&self, origin: &Point3) -> Vec3 {
+        let direction = &self.center1 - origin;
+        let dist_squared = direction.length_squared();
+        let mut uvw = Onb::default();
+        uvw.build_from_w(&direction);
+        uvw.local_vec(&random_to_sphere(self.radius, dist_squared))
+    }
+}
+
+pub fn random_to_sphere(radius: f64, distance_squared: f64) -> Vec3 {
+    let mut rng = rand::thread_rng();
+    let r1 = rng.gen_range(0.0..1.0);
+    let r2 = rng.gen_range(0.0..1.0);
+    let z = 1.0 + r2 * ((1.0 - radius * radius / distance_squared).sqrt() - 1.0);
+
+    let phi = 2.0 * PI * r1;
+    let x = phi.cos() * (1.0 - z * z).sqrt();
+    let y = phi.sin() * (1.0 - z * z).sqrt();
+
+    Vec3::new(x, y, z)
 }
