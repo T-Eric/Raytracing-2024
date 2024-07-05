@@ -480,12 +480,12 @@ fn cornell_box() -> std::io::Result<()> {
     let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 0.0, 65.0)));
     world.add(box2);
 
-    let lights = Arc::new(Quad::new(
-        Point3::new(343.0, 554.0, 332.0),
-        Vec3::new(-130.0, 0.0, 0.0),
-        Vec3::new(0.0, 0.0, -105.0),
-        Arc::new(Lambertian::new_color(Color::default())),
-    ));
+    // let lights = Arc::new(Quad::new(
+    //     Point3::new(343.0, 554.0, 332.0),
+    //     Vec3::new(-130.0, 0.0, 0.0),
+    //     Vec3::new(0.0, 0.0, -105.0),
+    //     Arc::new(Lambertian::new_color(Color::default())),
+    // ));
 
     let mut cam = Camera::default();
 
@@ -503,14 +503,21 @@ fn cornell_box() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book3");
-    let savefile = savepath.clone() + &*String::from("/10.png");
+    let savefile = savepath.clone() + &*String::from("/9.png");
     let path = Path::new(&savepath);
+
+    // if !path.exists() {
+    //     fs::create_dir_all(path)?;
+    //     cam.render(world, lights, savefile);
+    // } else {
+    //     cam.render(world, lights, savefile);
+    // }
 
     if !path.exists() {
         fs::create_dir_all(path)?;
-        cam.render(world, lights, savefile);
+        cam.render(world, savefile);
     } else {
-        cam.render(world, lights, savefile);
+        cam.render(world, savefile);
     }
 
     let now = now.elapsed().as_millis();

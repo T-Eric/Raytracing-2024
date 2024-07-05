@@ -41,7 +41,7 @@ impl Pdf for SpherePdf {
 }
 
 impl CosinePdf {
-    pub fn _new(w: Vec3) -> CosinePdf {
+    pub fn new(w: Vec3) -> CosinePdf {
         let mut uvw = Onb::default();
         uvw.build_from_w(&w);
         CosinePdf { uvw }
@@ -62,7 +62,7 @@ impl Pdf for CosinePdf {
 
 // One hittable pdf only holds one object, and cannot be HittableList
 impl HittablePdf {
-    pub fn new(objects: Arc<dyn Hittable>, origin: Point3) -> HittablePdf {
+    pub fn _new(objects: Arc<dyn Hittable>, origin: Point3) -> HittablePdf {
         HittablePdf { objects, origin }
     }
 }

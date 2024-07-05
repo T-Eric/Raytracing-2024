@@ -2,7 +2,7 @@ use crate::utils::color::{put_color, Color};
 use crate::utils::hittable::Hittable;
 use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
-use crate::utils::pdf::{HittablePdf, Pdf};
+use crate::utils::pdf::{CosinePdf, Pdf};
 use crate::utils::ray::Ray;
 use crate::utils::utility::{degrees_to_radians, INFINITY};
 use crate::utils::vec3::{cross, random_in_unit_disk, unit_vector, Point3, Vec3};
@@ -76,7 +76,7 @@ impl Default for Camera {
 
 impl Camera {
     // must multi-thread it!
-    pub fn render(&mut self, world: HittableList, lights: Arc<dyn Hittable>, savefile: String) {
+    pub fn render(&mut self, world: HittableList, savefile: String) {
         self.initialize();
         // Check environment param
         let progress_bar = if option_env!("CI").unwrap_or_default() == "true" {
@@ -94,7 +94,7 @@ impl Camera {
             let progress_bar = Arc::clone(&progress_bar);
             let imgbuf = Arc::clone(&imgbuf);
             let world = world.clone(); //inside, thus don't consume the param world
-            let lights = lights.clone();
+                                       // let lights = lights.clone();
             let self_copy = CameraCopy::new(self);
             let image_width = self.image_width;
             let thread_line = thread::spawn(move || {
@@ -108,7 +108,7 @@ impl Camera {
                                 &r,
                                 self_copy.max_recurse_depth,
                                 &world,
-                                lights.clone(),
+                                // lights.clone(),
                             );
                         }
                     }
@@ -250,7 +250,7 @@ impl CameraCopy {
         r: &Ray,
         depth: i32,
         world: &HittableList,
-        lights: Arc<dyn Hittable>,
+        // lights: Arc<dyn Hittable>,
     ) -> Color {
         // let mut rng = rand::thread_rng();
         if depth <= 0 {
@@ -259,19 +259,19 @@ impl CameraCopy {
         if let Some(rec) = world.hit(r, &Interval::new(0.001, INFINITY)) {
             let emission_color = rec.mat.emitted(r, &rec, rec.u, rec.v, &rec.p);
             if let Some((attenuation, mut scattered, mut pdf_val)) = rec.mat.scatter(r, &rec) {
-                // let surface_pdf = CosinePdf::new(rec.normal);
-                // scattered = Ray::new(rec.p, surface_pdf.generate(), r.time());
-                // pdf_val = surface_pdf.value(scattered.direction());
-                let light_pdf = HittablePdf::new(lights.clone(), rec.p);
-                scattered = Ray::new(rec.p, light_pdf.generate(), r.time());
-                pdf_val = light_pdf.value(scattered.direction());
+                let surface_pdf = CosinePdf::new(rec.normal);
+                scattered = Ray::new(rec.p, surface_pdf.generate(), r.time());
+                pdf_val = surface_pdf.value(scattered.direction());
+                // let light_pdf = HittablePdf::new(lights.clone(), rec.p);
+                // scattered = Ray::new(rec.p, light_pdf.generate(), r.time());
+                // pdf_val = light_pdf.value(scattered.direction());
 
                 let scatter_pdf = rec.mat.scattering_pdf(r, &rec, &scattered);
-                // let scatter_color =
-                //     self.ray_color(&scattered, depth - 1, world) * attenuation * scatter_pdf
-                //         / pdf_val;
-                let sample_color = self.ray_color(&scattered, depth - 1, world, lights);
-                let scatter_color = sample_color * scatter_pdf * attenuation / pdf_val;
+                let scatter_color =
+                    self.ray_color(&scattered, depth - 1, world) * attenuation * scatter_pdf
+                        / pdf_val;
+                // let sample_color = self.ray_color(&scattered, depth - 1, world, lights);
+                // let scatter_color = sample_color * scatter_pdf * attenuation / pdf_val;
 
                 emission_color + scatter_color
             } else {
