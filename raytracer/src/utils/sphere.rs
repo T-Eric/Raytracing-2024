@@ -17,7 +17,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    pub fn new_static(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
+    pub fn _new_static(center: Point3, radius: f64, mat: Arc<dyn Material>) -> Sphere {
         let rvec = Vec3::new(radius, radius, radius);
         Sphere {
             center1: center,
@@ -28,7 +28,7 @@ impl Sphere {
             bbox: Aabb::new_diagonal(center - rvec, center + rvec),
         }
     }
-    pub fn new_motive(
+    pub fn _new_motive(
         center1: Point3,
         center2: Point3,
         radius: f64,

@@ -299,6 +299,10 @@ pub fn random_cosine_direction() -> Vec3 {
     let x = phi.cos() * r2.sqrt();
     let y = phi.sin() * r2.sqrt();
     let z = (1.0 - r2).sqrt();
+    // let psi=0.5*PI*r2;
+    // let x = phi.cos()*psi.sin();
+    // let y = phi.sin()*psi.sin();
+    // let z = psi.cos();
 
     Vec3::new(x, y, z)
 }

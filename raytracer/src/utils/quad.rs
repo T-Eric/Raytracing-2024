@@ -4,8 +4,10 @@ use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
 use crate::utils::material::Material;
 use crate::utils::ray::Ray;
+use crate::utils::utility::INFINITY;
 use crate::utils::vec3::Point3;
 use crate::utils::vec3::{cross, dot, unit_vector, Vec3};
+use rand::Rng;
 use std::sync::Arc;
 
 pub trait Flat {
@@ -22,6 +24,7 @@ pub struct Quad {
     bbox: Aabb,
     normal: Vec3,
     d: f64, //in Ax+By+Cz=D
+    area: f64,
 }
 
 impl Quad {
@@ -39,6 +42,7 @@ impl Quad {
             bbox: Aabb::default(),
             normal,
             d,
+            area: n.length(),
         };
         Self::set_bounding_box(&mut ret);
         ret
@@ -95,6 +99,25 @@ impl Hittable for Quad {
 
     fn bounding_box(&self) -> &Aabb {
         &self.bbox
+    }
+
+    fn pdf_value(&self, origin: &Point3, direction: &Vec3) -> f64 {
+        if let Some(rec) = self.hit(
+            &Ray::new(*origin, *direction, 0.0),
+            &Interval::new(0.001, INFINITY),
+        ) {
+            let dist_squared = rec.t * rec.t * direction.length_squared();
+            let cosine = dot(direction, &rec.normal).abs() / direction.length();
+            dist_squared / (cosine * self.area)
+        } else {
+            0.0
+        }
+    }
+
+    fn random(&self, origin: &Point3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let p = self.q + (self.u * rng.gen_range(0.0..1.0)) + (self.v * rng.gen_range(0.0..1.0));
+        &p - origin
     }
 }
 

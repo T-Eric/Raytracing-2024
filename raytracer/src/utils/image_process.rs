@@ -1,7 +1,7 @@
 use image::GenericImageView;
 use rayon::prelude::*;
 
-pub fn process_pixels(image_path: &str) -> (u32, u32, Vec<(u8, u8, u8)>) {
+pub fn _process_pixels(image_path: &str) -> (u32, u32, Vec<(u8, u8, u8)>) {
     let img = image::open(image_path).expect("Open image failed!");
     let (width, height) = img.dimensions();
 

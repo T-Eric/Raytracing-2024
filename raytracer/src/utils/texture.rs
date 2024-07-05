@@ -1,7 +1,7 @@
 // Paint the surface
 
 use crate::utils::color::Color;
-use crate::utils::image_process::process_pixels;
+use crate::utils::image_process::_process_pixels;
 use crate::utils::interval::Interval;
 use crate::utils::perlin::Perlin;
 use crate::utils::vec3::Point3;
@@ -52,7 +52,7 @@ impl Texture for SolidColor {
 }
 
 impl CheckerTexture {
-    pub fn new(scale: f64, c1: Color, c2: Color) -> CheckerTexture {
+    pub fn _new(scale: f64, c1: Color, c2: Color) -> CheckerTexture {
         CheckerTexture {
             inv_scale: 1.0 / scale,
             even: Arc::new(SolidColor::new_color(c1)),
@@ -78,8 +78,8 @@ impl Texture for CheckerTexture {
 }
 
 impl ImageTexture {
-    pub fn new(image_path: &str) -> ImageTexture {
-        let (image_width, image_height, image_pixels) = process_pixels(image_path);
+    pub fn _new(image_path: &str) -> ImageTexture {
+        let (image_width, image_height, image_pixels) = _process_pixels(image_path);
         ImageTexture {
             image_width,
             image_height,
@@ -107,7 +107,7 @@ impl Texture for ImageTexture {
 }
 
 impl NoiseTexture {
-    pub fn new(scale: f64) -> NoiseTexture {
+    pub fn _new(scale: f64) -> NoiseTexture {
         NoiseTexture {
             noise: Perlin::default(),
             scale,

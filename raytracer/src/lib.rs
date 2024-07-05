@@ -11,6 +11,7 @@ pub use crate::utils::image_process;
 pub use crate::utils::interval;
 pub use crate::utils::material;
 pub use crate::utils::onb;
+pub use crate::utils::pdf;
 pub use crate::utils::perlin;
 pub use crate::utils::quad;
 pub use crate::utils::ray;

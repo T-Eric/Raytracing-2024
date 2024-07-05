@@ -54,7 +54,7 @@ impl Lambertian {
             tex: Arc::new(SolidColor::new_color(albedo)),
         }
     }
-    pub fn new_arc(tex: Arc<dyn Texture>) -> Self {
+    pub fn _new_arc(tex: Arc<dyn Texture>) -> Self {
         Lambertian { tex }
     }
 }
@@ -88,13 +88,14 @@ impl Material for Lambertian {
         let pdf = dot(uvw.w(), scattered.direction()) / PI;
         Some((attenuation, scattered, pdf))
     }
-    fn scattering_pdf(&self, _r_in: &Ray, _rec: &HitRecord, _scattered: &Ray) -> f64 {
-        1.0 / (2.0 * PI)
+    fn scattering_pdf(&self, _r_in: &Ray, rec: &HitRecord, scattered: &Ray) -> f64 {
+        let cos_theta = dot(&rec.normal, &unit_vector(scattered.direction()));
+        (cos_theta / PI).max(0.0)
     }
 }
 
 impl Metal {
-    pub fn new(albedo: Color, fuzz: f64) -> Self {
+    pub fn _new(albedo: Color, fuzz: f64) -> Self {
         Metal {
             albedo,
             fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
@@ -119,7 +120,7 @@ impl Material for Metal {
 }
 
 impl Dielectric {
-    pub fn new(refraction_index: f64) -> Dielectric {
+    pub fn _new(refraction_index: f64) -> Dielectric {
         Dielectric { refraction_index }
     }
 
@@ -184,7 +185,7 @@ impl Material for DiffuseLight {
 }
 
 impl Isotropic {
-    pub fn new_color(albedo: Color) -> Isotropic {
+    pub fn _new_color(albedo: Color) -> Isotropic {
         Isotropic {
             tex: Arc::new(SolidColor::new_color(albedo)),
         }
