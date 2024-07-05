@@ -105,7 +105,7 @@ fn cornell_box() -> std::io::Result<()> {
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 600;
-    cam.samples_per_pixel = 100;
+    cam.samples_per_pixel = 1024;
     cam.max_recurse_depth = 50;
 
     cam.vfov = 40.0;
@@ -117,7 +117,7 @@ fn cornell_box() -> std::io::Result<()> {
     cam.focus_dist = 10.0;
 
     let savepath = String::from("output/book3");
-    let savefile = savepath.clone() + &*String::from("/0.png");
+    let savefile = savepath.clone() + &*String::from("/13.png");
     let path = Path::new(&savepath);
 
     if !path.exists() {

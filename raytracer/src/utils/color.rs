@@ -15,11 +15,17 @@ pub fn put_color(pixel_color: &Color) -> (i32, i32, i32) {
     let mut r = pixel_color.x();
     let mut g = pixel_color.y();
     let mut b = pixel_color.z();
-    
+
     // Nan checker
-    if r.is_nan(){r=0.0}
-    if g.is_nan(){g=0.0}
-    if b.is_nan(){b=0.0}
+    if r.is_nan() {
+        r = 0.0
+    }
+    if g.is_nan() {
+        g = 0.0
+    }
+    if b.is_nan() {
+        b = 0.0
+    }
 
     // Apply linear to gamma-2 transformation
     r = linear_to_gamma(r);
