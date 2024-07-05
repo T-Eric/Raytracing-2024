@@ -7,6 +7,7 @@ use crate::utils::utility::PI;
 use crate::utils::vec3::{
     dot, random_cosine_direction, random_unit_vector, unit_vector, Point3, Vec3,
 };
+use rand::Rng;
 use std::sync::Arc;
 
 pub trait Pdf {
@@ -28,6 +29,11 @@ pub struct CosinePdf {
 pub struct HittablePdf {
     objects: Arc<dyn Hittable>,
     origin: Point3,
+}
+
+// mixture of cosine and hittable
+pub struct MixturePdf {
+    p: [Arc<dyn Pdf>; 2],
 }
 
 impl Pdf for SpherePdf {
@@ -62,7 +68,7 @@ impl Pdf for CosinePdf {
 
 // One hittable pdf only holds one object, and cannot be HittableList
 impl HittablePdf {
-    pub fn _new(objects: Arc<dyn Hittable>, origin: Point3) -> HittablePdf {
+    pub fn new(objects: Arc<dyn Hittable>, origin: Point3) -> HittablePdf {
         HittablePdf { objects, origin }
     }
 }
@@ -73,5 +79,25 @@ impl Pdf for HittablePdf {
     }
     fn generate(&self) -> Vec3 {
         self.objects.random(&self.origin)
+    }
+}
+
+impl MixturePdf {
+    pub fn new(p0: Arc<dyn Pdf>, p1: Arc<dyn Pdf>) -> MixturePdf {
+        MixturePdf { p: [p0, p1] }
+    }
+}
+
+impl Pdf for MixturePdf {
+    fn value(&self, direction: &Vec3) -> f64 {
+        0.5 * self.p[0].value(direction) + 0.5 * self.p[1].value(direction)
+    }
+    fn generate(&self) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        if rng.gen_range(0.0..1.0) < 0.5 {
+            self.p[0].generate()
+        } else {
+            self.p[1].generate()
+        }
     }
 }
