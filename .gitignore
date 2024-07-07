@@ -1,7 +1,8 @@
 doc/
 .git/
 README.md
-rust-toolchain
 LICENSE
 raytracer/output/
 target/
+target/debug/
+target/release/

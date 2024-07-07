@@ -1,6 +1,7 @@
 use crate::utils::hittable::{RotateY, Translate};
 use crate::utils::quad::{cube, Quad};
 use crate::utils::sphere::Sphere;
+use crate::utils::texture::ImageTexture;
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -133,6 +134,64 @@ fn cornell_box() -> std::io::Result<()> {
     Ok(())
 }
 
+fn earth() -> std::io::Result<()> {
+    let now = Instant::now();
+    let earth_texture = Arc::new(ImageTexture::new("source/earthmap.jpg"));
+    let earth_surface = Arc::new(Lambertian::new_arc(earth_texture));
+    let globe = Arc::new(Sphere::new_static(Point3::default(), 2.0, earth_surface));
+
+    let mut world = HittableList::default();
+    world.add(globe);
+
+    let mut lights = HittableList::default();
+    let m = Arc::new(Lambertian::new_color(Color::default()));
+    lights.add(Arc::new(Quad::new(
+        Point3::new(343.0, 554.0, 332.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -105.0),
+        m,
+    )));
+    let lights = Arc::new(lights);
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_recurse_depth = 50;
+
+    cam.vfov = 20.0;
+    cam.lookfrom = Point3::new(0.0, 0.0, 12.0);
+    cam.lookat = Point3::default();
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
+
+    let savepath = String::from("output/book2");
+    let savefile = savepath.clone() + &*String::from("/0.png");
+    let path = Path::new(&savepath);
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+        cam.render(world, lights, savefile);
+    } else {
+        cam.render(world, lights, savefile);
+    }
+
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
+    Ok(())
+}
+
 fn main() {
-    cornell_box().expect("Fail!");
+    match 2 {
+        1 => {
+            cornell_box().expect("Fail!");
+        }
+        2 => {
+            earth().expect("Fail!");
+        }
+        _ => (),
+    }
 }

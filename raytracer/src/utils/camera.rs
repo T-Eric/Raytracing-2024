@@ -275,11 +275,11 @@ impl CameraCopy {
                 emission_color
             }
         } else {
-            self.background
+            // self.background
             // old background
-            // let unit_direction = unit_vector(r.direction());
-            // let a = 0.5 * (unit_direction.y() + 1.0);
-            // Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
+            let unit_direction = unit_vector(r.direction()) + self.background;
+            let a = 0.5 * (unit_direction.y() + 1.0);
+            Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
         }
     }
 

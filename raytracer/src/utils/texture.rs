@@ -78,7 +78,7 @@ impl Texture for CheckerTexture {
 }
 
 impl ImageTexture {
-    pub fn _new(image_path: &str) -> ImageTexture {
+    pub fn new(image_path: &str) -> ImageTexture {
         let (image_width, image_height, image_pixels) = _process_pixels(image_path);
         ImageTexture {
             image_width,

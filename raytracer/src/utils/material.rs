@@ -84,7 +84,7 @@ impl Lambertian {
             tex: Arc::new(SolidColor::new_color(albedo)),
         }
     }
-    pub fn _new_arc(tex: Arc<dyn Texture>) -> Self {
+    pub fn new_arc(tex: Arc<dyn Texture>) -> Self {
         Lambertian { tex }
     }
 }
