@@ -3,6 +3,8 @@ use crate::utils::hittable::{HitRecord, Hittable};
 use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
 use crate::utils::material::Material;
+use crate::utils::normal_map::NormalMap;
+use crate::utils::onb::Onb;
 use crate::utils::ray::Ray;
 use crate::utils::utility::INFINITY;
 use crate::utils::vec3::Point3;
@@ -21,6 +23,7 @@ pub struct Quad {
     v: Vec3,
     w: Vec3,
     mat: Arc<dyn Material>,
+    nmap: Arc<dyn NormalMap>,
     bbox: Aabb,
     normal: Vec3,
     d: f64, //in Ax+By+Cz=D
@@ -28,7 +31,13 @@ pub struct Quad {
 }
 
 impl Quad {
-    pub fn new(q: Point3, u: Vec3, v: Vec3, mat: Arc<dyn Material>) -> Quad {
+    pub fn new(
+        q: Point3,
+        u: Vec3,
+        v: Vec3,
+        mat: Arc<dyn Material>,
+        nmap: Arc<dyn NormalMap>,
+    ) -> Quad {
         let n = cross(&u, &v);
         let normal = unit_vector(&n);
         let d = dot(&normal, &q);
@@ -40,6 +49,7 @@ impl Quad {
             w,
             mat,
             bbox: Aabb::default(),
+            nmap,
             normal,
             d,
             area: n.length(),
@@ -91,6 +101,16 @@ impl Hittable for Quad {
                     None
                 } else {
                     rec.set_face_normal(r, self.normal);
+                    rec.u = alpha;
+                    rec.v = beta;
+                    // 在此处修改normal，但愿有效
+                    let (u, v) = self.nmap.convert((alpha, beta), (1.0, 1.0));
+                    // 需要让wtb的u与横边平行，v与竖边平行，不一定要是正交
+                    let mut wtb = Onb::default();
+                    wtb.axis[0] = unit_vector(&self.u);
+                    wtb.axis[1] = unit_vector(&self.v);
+                    wtb.axis[2] = unit_vector(&rec.normal);
+                    rec.normal = self.nmap.modify_normal((u, v), wtb);
                     Some(rec)
                 }
             }
@@ -122,7 +142,12 @@ impl Hittable for Quad {
 }
 
 // a 3d box,formed by six sides
-pub fn cube(a: Point3, b: Point3, mat: Arc<dyn Material>) -> Arc<HittableList> {
+pub fn cube(
+    a: Point3,
+    b: Point3,
+    mat: Arc<dyn Material>,
+    nmap: Arc<dyn NormalMap>,
+) -> Arc<HittableList> {
     let mut sides = HittableList::default();
     let min = Point3::new(a.x().min(b.x()), a.y().min(b.y()), a.z().min(b.z()));
     let max = Point3::new(a.x().max(b.x()), a.y().max(b.y()), a.z().max(b.z()));
@@ -136,36 +161,42 @@ pub fn cube(a: Point3, b: Point3, mat: Arc<dyn Material>) -> Arc<HittableList> {
         dx,
         dy,
         mat.clone(),
+        nmap.clone(),
     )));
     sides.add(Arc::new(Quad::new(
         Point3::new(max.x(), min.y(), max.z()),
         -dz,
         dy,
         mat.clone(),
+        nmap.clone(),
     )));
     sides.add(Arc::new(Quad::new(
         Point3::new(max.x(), min.y(), min.z()),
         -dx,
         dy,
         mat.clone(),
+        nmap.clone(),
     )));
     sides.add(Arc::new(Quad::new(
         Point3::new(min.x(), min.y(), min.z()),
         dz,
         dy,
         mat.clone(),
+        nmap.clone(),
     )));
     sides.add(Arc::new(Quad::new(
         Point3::new(min.x(), max.y(), max.z()),
         dx,
         -dz,
         mat.clone(),
+        nmap.clone(),
     )));
     sides.add(Arc::new(Quad::new(
         Point3::new(min.x(), min.y(), min.z()),
         dx,
         dz,
         mat,
+        nmap,
     )));
 
     Arc::new(sides)

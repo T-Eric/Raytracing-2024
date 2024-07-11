@@ -1,10 +1,11 @@
 // Paint the surface
 
 use crate::utils::color::Color;
-use crate::utils::image_process::_process_pixels;
+use crate::utils::image_process::process_pixels;
 use crate::utils::interval::Interval;
 use crate::utils::perlin::Perlin;
 use crate::utils::vec3::Point3;
+use image::RgbImage;
 use std::sync::Arc;
 
 pub trait Texture: Send + Sync {
@@ -25,7 +26,7 @@ pub struct CheckerTexture {
 pub struct ImageTexture {
     image_width: u32,
     image_height: u32,
-    image_pixels: Vec<(u8, u8, u8)>,
+    image_pixels: RgbImage,
 }
 
 #[derive(Default)]
@@ -78,8 +79,8 @@ impl Texture for CheckerTexture {
 }
 
 impl ImageTexture {
-    pub fn _new(image_path: &str) -> ImageTexture {
-        let (image_width, image_height, image_pixels) = _process_pixels(image_path);
+    pub fn new(image_path: &str) -> ImageTexture {
+        let (image_width, image_height, image_pixels) = process_pixels(image_path);
         ImageTexture {
             image_width,
             image_height,
@@ -93,21 +94,21 @@ impl Texture for ImageTexture {
         let u = Interval::new(0.0, 1.0).clamp(u);
         let v = 1.0 - Interval::new(0.0, 1.0).clamp(v); //Flipping v
 
-        let i = (u * self.image_width as f64) as i32;
-        let j = (v * self.image_height as f64) as i32;
-        let pixel = &self.image_pixels[(j as u32 * self.image_width + i as u32) as usize];
+        let i = (u * self.image_width as f64) as u32;
+        let j = (v * self.image_height as f64) as u32;
+        let pixel = self.image_pixels.get_pixel(i, j);
 
         let color_scale = 1.0 / 255.0;
         Color::new(
-            color_scale * pixel.0 as f64,
-            color_scale * pixel.1 as f64,
-            color_scale * pixel.2 as f64,
+            color_scale * pixel[0] as f64,
+            color_scale * pixel[1] as f64,
+            color_scale * pixel[2] as f64,
         )
     }
 }
 
 impl NoiseTexture {
-    pub fn _new(scale: f64) -> NoiseTexture {
+    pub fn new(scale: f64) -> NoiseTexture {
         NoiseTexture {
             noise: Perlin::default(),
             scale,

@@ -31,7 +31,7 @@ impl ConstMedium {
             phase_function: Arc::new(Isotropic::_new_texture(tex)),
         }
     }
-    pub fn _new_color(boundary: Arc<dyn Hittable>, density: f64, albedo: Color) -> ConstMedium {
+    pub fn new_color(boundary: Arc<dyn Hittable>, density: f64, albedo: Color) -> ConstMedium {
         ConstMedium {
             boundary,
             neg_inv_density: -1.0 / density,

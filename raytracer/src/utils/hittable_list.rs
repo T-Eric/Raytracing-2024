@@ -39,6 +39,9 @@ impl Hittable for HittableList {
         &self.bbox
     }
     fn pdf_value(&self, origin: &Point3, direction: &Vec3) -> f64 {
+        if self.objects.is_empty() {
+            return 0.1;
+        }
         let weight = 1.0 / self.objects.len() as f64;
         let mut sum = 0.0;
 
@@ -48,9 +51,12 @@ impl Hittable for HittableList {
         sum
     }
     fn random(&self, origin: &Point3) -> Vec3 {
+        if self.objects.is_empty() {
+            return Vec3::random();
+        }
         let mut rng = rand::thread_rng();
         let int_size = self.objects.len();
-        let pos = rng.gen_range(0..=int_size - 1);
+        let pos = rng.gen_range(0..int_size);
         self.objects[pos].random(origin)
     }
 }

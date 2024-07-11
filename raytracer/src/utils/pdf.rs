@@ -66,7 +66,6 @@ impl Pdf for CosinePdf {
     }
 }
 
-// One hittable pdf only holds one object, and cannot be HittableList
 impl HittablePdf {
     pub fn new(objects: Arc<dyn Hittable>, origin: Point3) -> HittablePdf {
         HittablePdf { objects, origin }

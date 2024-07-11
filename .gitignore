@@ -5,3 +5,4 @@ rust-toolchain
 LICENSE
 raytracer/output/
 target/
+raytracer/source/objs

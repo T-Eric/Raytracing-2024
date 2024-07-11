@@ -1,4 +1,5 @@
 use crate::utils::color::{put_color, Color};
+use crate::utils::edge_detect::*;
 use crate::utils::hittable::Hittable;
 use crate::utils::hittable_list::HittableList;
 use crate::utils::interval::Interval;
@@ -41,6 +42,9 @@ pub struct Camera {
 
     pub defocus_angle: f64, // Variation angle of rays through each pixel
     pub focus_dist: f64,    // Distance from lookfrom to focus plane
+
+    pub gauss_fuzzing_scale: f64, // do not fuzz if 0.0
+    pub edge_detect: bool,
 }
 
 impl Default for Camera {
@@ -70,6 +74,8 @@ impl Default for Camera {
             w: Vec3::default(),
             defocus_disk_u: Vec3::default(),
             defocus_disk_v: Vec3::default(),
+            gauss_fuzzing_scale: 0.0,
+            edge_detect: false,
         }
     }
 }
@@ -131,7 +137,19 @@ impl Camera {
         }
         progress_bar.lock().unwrap().finish();
         let imgbuf = Arc::try_unwrap(imgbuf).unwrap().into_inner().unwrap();
-        imgbuf.save(savefile).unwrap()
+
+        // edge detection
+        if self.edge_detect {
+            let fuzz_img = gauss_fuzzing(&imgbuf, self.gauss_fuzzing_scale);
+            let sketch_img = edge_detecting(&fuzz_img);
+            let imgbuf = combination(&imgbuf, sketch_img);
+            imgbuf.save(savefile).unwrap()
+        } else if self.gauss_fuzzing_scale > 0.001 {
+            let imgbuf = gauss_fuzzing(&imgbuf, self.gauss_fuzzing_scale);
+            imgbuf.save(savefile).unwrap()
+        } else {
+            imgbuf.save(savefile).unwrap()
+        }
     }
 }
 
@@ -264,6 +282,7 @@ impl CameraCopy {
                 let p = MixturePdf::new(light_ptr, srec.pdf_ptr);
                 let scattered = Ray::new(rec.p, p.generate(), r.time());
                 let pdf_val = p.value(scattered.direction());
+                // 原因：p.generate出现nan，是因origin在球里面
 
                 let scatter_pdf = rec.mat.scattering_pdf(r, &rec, &scattered);
 
@@ -275,11 +294,11 @@ impl CameraCopy {
                 emission_color
             }
         } else {
-            self.background
+            // self.background
             // old background
-            // let unit_direction = unit_vector(r.direction());
-            // let a = 0.5 * (unit_direction.y() + 1.0);
-            // Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
+            let unit_direction = unit_vector(r.direction()) + self.background;
+            let a = 0.5 * (unit_direction.y() + 1.0);
+            Color::new(1.0, 1.0, 1.0) * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
         }
     }
 

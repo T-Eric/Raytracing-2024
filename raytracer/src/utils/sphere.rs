@@ -30,7 +30,7 @@ impl Sphere {
             bbox: Aabb::new_diagonal(center - rvec, center + rvec),
         }
     }
-    pub fn _new_motive(
+    pub fn new_motive(
         center1: Point3,
         center2: Point3,
         radius: f64,

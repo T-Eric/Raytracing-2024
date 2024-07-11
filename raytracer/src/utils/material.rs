@@ -62,7 +62,7 @@ pub struct Lambertian {
 
 // Metal, full reflection
 pub struct Metal {
-    albedo: Color,
+    tex: Arc<dyn Texture>,
     fuzz: f64,
 }
 
@@ -84,7 +84,7 @@ impl Lambertian {
             tex: Arc::new(SolidColor::new_color(albedo)),
         }
     }
-    pub fn _new_arc(tex: Arc<dyn Texture>) -> Self {
+    pub fn new_tex(tex: Arc<dyn Texture>) -> Self {
         Lambertian { tex }
     }
 }
@@ -105,9 +105,15 @@ impl Material for Lambertian {
 }
 
 impl Metal {
-    pub fn _new(albedo: Color, fuzz: f64) -> Self {
+    pub fn new_color(albedo: Color, fuzz: f64) -> Self {
         Metal {
-            albedo,
+            tex: Arc::new(SolidColor::new_color(albedo)),
+            fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
+        }
+    }
+    pub fn new_tex(tex: Arc<dyn Texture>, fuzz: f64) -> Self {
+        Metal {
+            tex,
             fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
         }
     }
@@ -120,7 +126,7 @@ impl Material for Metal {
         reflected = unit_vector(&reflected) + (random_unit_vector() * self.fuzz);
 
         Some(ScatterRecord::new(
-            self.albedo,
+            self.tex.value(rec.u, rec.v, &rec.p),
             Arc::new(SpherePdf {}),
             true,
             Ray::new(rec.p, reflected, r_in.time()),
@@ -142,31 +148,6 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    // fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray, f64)> {
-    //     let attenuation = Color::new(1.0, 1.0, 1.0);
-    //     let ri = if rec.front_face {
-    //         1.0 / self.refraction_index
-    //     } else {
-    //         self.refraction_index
-    //     };
-    //
-    //     let unit_direction = unit_vector(r_in.direction());
-    //     let cos_theta = dot(&-&unit_direction, &rec.normal).min(1.0);
-    //     let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
-    //
-    //     //consider full reflection
-    //     let cannot_reflect = ri * sin_theta > 1.0;
-    //     let direction: Vec3 =
-    //         if cannot_reflect || self.reflectance(cos_theta, ri) > rand::random::<f64>() {
-    //             reflect(&unit_direction, &rec.normal)
-    //         } else {
-    //             refract(&unit_direction, &rec.normal, ri)
-    //         };
-    //
-    //     let scattered = Ray::new(rec.p, direction, r_in.time());
-    //
-    //     Some((attenuation, scattered, 0.0))
-    // }
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<ScatterRecord> {
         let mut rng = rand::thread_rng();
         let ri = if rec.front_face {
