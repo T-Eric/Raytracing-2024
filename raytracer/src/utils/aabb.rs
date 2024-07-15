@@ -7,11 +7,21 @@ use crate::utils::vec3::{Point3, Vec3};
 use std::mem::swap;
 use std::ops::Add;
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct Aabb {
     pub x: Interval,
     pub y: Interval,
     pub z: Interval,
+}
+
+impl Default for Aabb{
+    fn default() -> Self {
+        Aabb{
+            x:Interval::EMPTY,
+            y:Interval::EMPTY,
+            z:Interval::EMPTY,
+        }
+    }
 }
 
 impl Aabb {

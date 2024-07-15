@@ -16,7 +16,6 @@ pub struct SolidColor {
     albedo: Color,
 }
 
-#[derive(Clone)]
 pub struct CheckerTexture {
     inv_scale: f64,
     even: Arc<dyn Texture>,
@@ -53,7 +52,7 @@ impl Texture for SolidColor {
 }
 
 impl CheckerTexture {
-    pub fn _new(scale: f64, c1: Color, c2: Color) -> CheckerTexture {
+    pub fn _new(scale: f64, c1: Color, c2: Color) -> Self {
         CheckerTexture {
             inv_scale: 1.0 / scale,
             even: Arc::new(SolidColor::new_color(c1)),
@@ -79,8 +78,16 @@ impl Texture for CheckerTexture {
 }
 
 impl ImageTexture {
-    pub fn new(image_path: &str) -> ImageTexture {
+    pub fn new_path(image_path: &str) -> ImageTexture {
         let (image_width, image_height, image_pixels) = process_pixels(image_path);
+        ImageTexture {
+            image_width,
+            image_height,
+            image_pixels,
+        }
+    }
+    pub fn _new_image(image_pixels: RgbImage) -> ImageTexture {
+        let (image_width, image_height) = image_pixels.dimensions();
         ImageTexture {
             image_width,
             image_height,

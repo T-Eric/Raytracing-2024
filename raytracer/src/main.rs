@@ -1,7 +1,9 @@
+mod utils;
 use crate::utils::bvh::BvhNode;
 use crate::utils::constant_medium::ConstMedium;
+use crate::utils::flats::{cube, Quad};
 use crate::utils::hittable::{RotateY, Translate};
-use crate::utils::quad::{cube, Quad};
+use crate::utils::obj_mesh::Mesh;
 use crate::utils::sphere::Sphere;
 use crate::utils::texture::{ImageTexture, NoiseTexture};
 use rand::Rng;
@@ -217,7 +219,7 @@ fn final_scene(
         Color::new(1.0, 1.0, 1.0),
     )));
 
-    let emat = Arc::new(Lambertian::new_tex(Arc::new(ImageTexture::new(
+    let emat = Arc::new(Lambertian::new_tex(Arc::new(ImageTexture::new_path(
         "source/earthmap.jpg",
     ))));
     world.add(Arc::new(Sphere::new_static(
@@ -281,8 +283,6 @@ fn final_scene(
     eprintln!("duration:{:?}ms", now);
     Ok(())
 }
-
-mod utils;
 fn cornell_box() -> std::io::Result<()> {
     let now = Instant::now();
 
@@ -296,16 +296,17 @@ fn cornell_box() -> std::io::Result<()> {
     // let pink = Arc::new(Lambertian::new_color(Color::new(0.8, 0.4, 0.4)));
     let light = Arc::new(DiffuseLight::new_color(Color::new(15.0, 15.0, 15.0)));
 
-    let apple = Arc::new(Lambertian::new_tex(Arc::new(ImageTexture::new(
+    let apple = Arc::new(Lambertian::new_tex(Arc::new(ImageTexture::new_path(
         "source/normalmaps/sourapple.jpg",
     ))));
     let apple_nmap = Arc::new(MapMap::new("source/normalmaps/sourapple.png"));
-    let weavey = Arc::new(Lambertian::new_tex(Arc::new(ImageTexture::new(
-        "source/normalmaps/R.jpg",
-    ))));
+    let weavey = Arc::new(Metal::new_tex(
+        Arc::new(ImageTexture::new_path("source/normalmaps/R.jpg")),
+        0.0,
+    ));
     let weavey_nmap = Arc::new(MapMap::new("source/normalmaps/R.png"));
     let clouds = Arc::new(Metal::new_tex(
-        Arc::new(ImageTexture::new("source/normalmaps/clouds.jpg")),
+        Arc::new(ImageTexture::new_path("source/normalmaps/clouds.jpg")),
         0.2,
     ));
     let clouds_nmap = Arc::new(MapMap::new("source/normalmaps/clouds.png"));
@@ -432,7 +433,7 @@ fn cornell_box() -> std::io::Result<()> {
 
 fn earth() -> std::io::Result<()> {
     let now = Instant::now();
-    let earth_texture = Arc::new(ImageTexture::new("source/earthmap.jpg"));
+    let earth_texture = Arc::new(ImageTexture::new_path("source/earthmap.jpg"));
     let earth_surface = Arc::new(Lambertian::new_tex(earth_texture));
     let globe = Arc::new(Sphere::new_static(Point3::default(), 2.0, earth_surface));
 
@@ -468,6 +469,137 @@ fn earth() -> std::io::Result<()> {
     let savepath = String::from("output/book2");
     let savefile = savepath.clone() + &*String::from("/0.png");
     let path = Path::new(&savepath);
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+        cam.render(world, lights, savefile);
+    } else {
+        cam.render(world, lights, savefile);
+    }
+
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
+    Ok(())
+}
+
+fn cornell_box_normal() -> std::io::Result<()> {
+    let now = Instant::now();
+
+    let mut world = HittableList::default();
+    let origin_nmap = Arc::new(OriginMap::default());
+
+    let red = Arc::new(Lambertian::new_color(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new_color(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new_color(Color::new(0.12, 0.45, 0.15)));
+    let blue = Arc::new(Lambertian::new_color(Color::new(0.4, 0.6, 0.8)));
+    let pink = Arc::new(Lambertian::new_color(Color::new(0.8, 0.4, 0.4)));
+    let light = Arc::new(DiffuseLight::new_color(Color::new(15.0, 15.0, 15.0)));
+
+    world.add(Arc::new(Quad::new(
+        Point3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        green,
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::default(),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        red,
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(343.0, 554.0, 332.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -105.0),
+        light,
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::default(),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(555.0, 555.0, 555.0),
+        Vec3::new(-555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -555.0),
+        white.clone(),
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        white,
+        origin_nmap.clone(),
+    )));
+
+    let box1 = cube(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 330.0, 165.0),
+        blue,
+        origin_nmap.clone(),
+    ); // material=aluminum
+    let box1 = Arc::new(RotateY::new(box1, 15.0));
+    let box1 = Arc::new(Translate::new(box1, Vec3::new(265.0, 0.0, 295.0)));
+    world.add(box1);
+
+    let box2 = cube(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 165.0, 165.0),
+        pink,
+        origin_nmap.clone(),
+    );
+    let box2 = Arc::new(RotateY::new(box2, -18.0));
+    let box2 = Arc::new(Translate::new(box2, Vec3::new(130.0, 300.0, 65.0)));
+    world.add(box2);
+
+    let glass = Arc::new(Dielectric::new(1.5));
+    world.add(Arc::new(Sphere::new_static(
+        Point3::new(190.0, 90.0, 190.0),
+        90.0,
+        glass,
+    )));
+
+    let mut lights = HittableList::default();
+    let m = Arc::new(Lambertian::new_color(Color::default()));
+    lights.add(Arc::new(Quad::new(
+        Point3::new(343.0, 554.0, 332.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -105.0),
+        m.clone(),
+        origin_nmap,
+    )));
+    lights.add(Arc::new(Sphere::new_static(
+        Point3::new(190.0, 90.0, 190.0),
+        90.0,
+        m,
+    )));
+    let lights = Arc::new(lights);
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 1200;
+    cam.samples_per_pixel = 400;
+    cam.max_recurse_depth = 50;
+
+    cam.vfov = 40.0;
+    cam.lookfrom = Point3::new(278.0, 278.0, -800.0);
+    cam.lookat = Point3::new(278.0, 278.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
+
+    let savepath = String::from("output/book0");
+    let savefile = savepath.clone() + &*String::from("/40.png");
+    let path = Path::new(&savepath);
+
     if !path.exists() {
         fs::create_dir_all(path)?;
         cam.render(world, lights, savefile);
@@ -536,8 +668,115 @@ fn debugger() -> std::io::Result<()> {
     Ok(())
 }
 
+fn obj() -> std::io::Result<()> {
+    let now = Instant::now();
+
+    let mut world = HittableList::default();
+    let origin_nmap = Arc::new(OriginMap::default());
+
+    let red = Arc::new(Lambertian::new_color(Color::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::new_color(Color::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::new_color(Color::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(DiffuseLight::new_color(Color::new(15.0, 15.0, 15.0)));
+
+    world.add(Arc::new(Quad::new(
+        Point3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        green,
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::default(),
+        Vec3::new(0.0, 555.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        red,
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(343.0, 554.0, 332.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -105.0),
+        light,
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::default(),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, 555.0),
+        white.clone(),
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(555.0, 555.0, 555.0),
+        Vec3::new(-555.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -555.0),
+        white.clone(),
+        origin_nmap.clone(),
+    )));
+    world.add(Arc::new(Quad::new(
+        Point3::new(0.0, 0.0, 555.0),
+        Vec3::new(555.0, 0.0, 0.0),
+        Vec3::new(0.0, 555.0, 0.0),
+        white,
+        origin_nmap.clone(),
+    )));
+
+    let patrick = Arc::new(Mesh::new("source/objs/objects/patrick.obj", 200.0));
+    let patrick = Arc::new(Translate::new(patrick, Vec3::new(278.0, 208.0, 278.0)));
+    // let patrick = Arc::new(RotateY::new(patrick, 180.0));
+    world.add(patrick);
+
+    let mut lights = HittableList::default();
+    let m = Arc::new(Lambertian::new_color(Color::default()));
+    lights.add(Arc::new(Quad::new(
+        Point3::new(343.0, 554.0, 332.0),
+        Vec3::new(-130.0, 0.0, 0.0),
+        Vec3::new(0.0, 0.0, -105.0),
+        m.clone(),
+        origin_nmap,
+    )));
+    lights.add(Arc::new(Sphere::new_static(
+        Point3::new(190.0, 90.0, 190.0),
+        90.0,
+        m,
+    )));
+    let lights = Arc::new(lights);
+
+    let mut cam = Camera::default();
+
+    cam.aspect_ratio = 1.0;
+    cam.image_width = 400;
+    cam.samples_per_pixel = 100;
+    cam.max_recurse_depth = 50;
+
+    cam.vfov = 40.0;
+    cam.lookfrom = Point3::new(278.0, 278.0, -800.0);
+    cam.lookat = Point3::new(278.0, 278.0, 0.0);
+    cam.vup = Vec3::new(0.0, 1.0, 0.0);
+
+    cam.defocus_angle = 0.0;
+    cam.focus_dist = 10.0;
+
+    let savepath = String::from("output/book0");
+    let savefile = savepath.clone() + &*String::from("/51_pat.png");
+    let path = Path::new(&savepath);
+
+    if !path.exists() {
+        fs::create_dir_all(path)?;
+        cam.render(world, lights, savefile);
+    } else {
+        cam.render(world, lights, savefile);
+    }
+
+    let now = now.elapsed().as_millis();
+    eprintln!();
+    eprintln!("duration:{:?}ms", now);
+    Ok(())
+}
+
 fn main() {
-    match 3 {
+    match 7 {
         1 => {
             bouncing_spheres().expect("Fail!");
         }
@@ -551,7 +790,13 @@ fn main() {
             earth().expect("Fail!");
         }
         5 => {
+            cornell_box_normal().expect("Fail!");
+        }
+        6 => {
             debugger().expect("Fail!");
+        }
+        7 => {
+            obj().expect("Fail!");
         }
         _ => (),
     }

@@ -101,8 +101,6 @@ impl Hittable for Quad {
                     None
                 } else {
                     rec.set_face_normal(r, self.normal);
-                    rec.u = alpha;
-                    rec.v = beta;
                     // 在此处修改normal，但愿有效
                     let (u, v) = self.nmap.convert((alpha, beta), (1.0, 1.0));
                     // 需要让wtb的u与横边平行，v与竖边平行，不一定要是正交
@@ -200,4 +198,135 @@ pub fn cube(
     )));
 
     Arc::new(sides)
+}
+
+pub struct Tria {
+    pub q: Point3,
+    pub u: Vec3,
+    pub v: Vec3,
+    pub w: Vec3,
+    mat: Arc<dyn Material>,
+    nmap: Arc<dyn NormalMap>,
+    bbox: Aabb,
+    normal: Vec3,
+    d: f64,
+    area: f64,
+} // Triangles
+
+impl Tria {
+    pub fn new_vec(
+        q: Point3,
+        u: Vec3,
+        v: Vec3,
+        mat: Arc<dyn Material>,
+        nmap: Arc<dyn NormalMap>,
+    ) -> Self {
+        let n = cross(&u, &v); // |n|=2*area
+        let normal = unit_vector(&n);
+        let d = dot(&normal, &q);
+        let w = n / dot(&n, &n);
+        let mut ret = Tria {
+            q,
+            u,
+            v,
+            w,
+            mat,
+            bbox: Aabb::default(),
+            nmap,
+            normal,
+            d,
+            area: n.length() / 2.0,
+        };
+        Self::set_bounding_box(&mut ret);
+        ret
+    }
+    pub fn new_point(
+        q: Point3,
+        p: Point3,
+        r: Point3,
+        mat: Arc<dyn Material>,
+        nmap: Arc<dyn NormalMap>,
+    ) -> Self {
+        let u = p - q;
+        let v = r - q;
+        Self::new_vec(q, u, v, mat, nmap)
+    }
+}
+
+impl Flat for Tria {
+    fn set_bounding_box(&mut self) {
+        self.bbox = Aabb::new_aabb(
+            &Aabb::new_diagonal(self.q, self.q + self.u + self.v),
+            &Aabb::new_diagonal(self.q + self.u, self.q + self.v),
+        )
+    }
+
+    fn is_interior(a: f64, b: f64, rec: &mut HitRecord) -> bool {
+        if a <= 0.0 || b <= 0.0 || a + b >= 1.0 {
+            false
+        } else {
+            rec.u = a;
+            rec.v = b;
+            true
+        }
+    }
+}
+
+impl Hittable for Tria {
+    fn hit(&self, r: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+        let denom = dot(&self.normal, r.direction());
+        if denom.abs() < 1e-8 {
+            None
+        } else {
+            let t = (self.d - dot(&self.normal, r.origin())) / denom;
+            if !ray_t.contains(t) {
+                None
+            } else {
+                let ins = r.at(t);
+                let phv = ins - self.q;
+                let alpha = dot(&self.w, &cross(&phv, &self.v));
+                let beta = dot(&self.w, &cross(&self.u, &phv));
+                let mut rec = HitRecord::new(&ins, &self.normal, self.mat.clone(), t, false);
+                if !Self::is_interior(alpha, beta, &mut rec) {
+                    None
+                } else {
+                    rec.set_face_normal(r, self.normal);
+                    let (u, v) = self.nmap.convert((alpha, beta), (1.0, 1.0));
+                    let mut wtb = Onb::default();
+                    wtb.axis[0] = unit_vector(&self.u);
+                    wtb.axis[1] = unit_vector(&self.v);
+                    wtb.axis[2] = unit_vector(&rec.normal);
+                    rec.normal = self.nmap.modify_normal((u, v), wtb);
+                    Some(rec)
+                }
+            }
+        }
+    }
+
+    fn bounding_box(&self) -> &Aabb {
+        &self.bbox
+    }
+
+    fn pdf_value(&self, origin: &Point3, direction: &Vec3) -> f64 {
+        if let Some(rec) = self.hit(
+            &Ray::new(*origin, *direction, 0.0),
+            &Interval::new(0.001, INFINITY),
+        ) {
+            let dist_squared = rec.t * rec.t * direction.length_squared();
+            let cosine = dot(direction, &rec.normal).abs() / direction.length();
+            dist_squared / (cosine * self.area * 2.0)
+        } else {
+            0.0
+        }
+    }
+
+    fn random(&self, origin: &Point3) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let u: f64 = rng.gen_range(0.0..1.0);
+        let v: f64 = rng.gen_range(0.0..1.0);
+        let p = self.q + self.u;
+        let r = self.q + self.v;
+        let ret = self.q * v.sqrt() * (1.0 - u) + p * u * v.sqrt() + r * (1.0 - v.sqrt());
+        &ret - origin
+    }
 }

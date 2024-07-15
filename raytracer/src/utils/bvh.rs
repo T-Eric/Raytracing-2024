@@ -47,7 +47,7 @@ impl BvhNode {
             right: right.clone(),
             bbox,
         }
-    } //有个大问题：采用元组直接赋值就不行，但间接赋值可以，为什么？
+    }
 
     pub fn new_list(list: &mut HittableList) -> BvhNode {
         let len = list.objects.len();
@@ -85,20 +85,6 @@ impl Hittable for BvhNode {
             }
             None => self.right.hit(r, ray_t),
         }
-        // let mut rec = None;
-        // if !self.bbox.hit(r, ray_t) {
-        //     None
-        // } else {
-        //     let mut closest_so_far = ray_t.max;
-        //     if let Some(temp_rec) = self.left.hit(r, ray_t) {
-        //         closest_so_far = temp_rec.t;
-        //         rec = Some(temp_rec)
-        //     }
-        //     if let Some(temp_rec) = self.right.hit(r, &Interval::new(ray_t.min, closest_so_far)) {
-        //         rec = Some(temp_rec);
-        //     }
-        //     rec
-        // }
     }
 
     fn bounding_box(&self) -> &Aabb {
