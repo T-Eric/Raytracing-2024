@@ -1,0 +1,77 @@
+newmtl mat1
+	Ns 10
+	Ni 1.0
+	d 1.0
+	Tf 1 1 1
+	illum 2
+	Ka 0.5 0.5 0.5
+	Kd 0.9 0.9 0.9
+	Ks 0.0 0.0 0.0
+	map_Kd PlyKirby5KSkinp.png
+
+newmtl mat2
+	Ns 10
+	Ni 1.0
+	d 1.0
+	Tf 1 1 1
+	illum 2
+	Ka 0.5 0.5 0.5
+	Kd 0.9 0.9 0.9
+	Ks 0.0 0.0 0.0
+	map_Kd PlyKirby5KMouth.png
+
+newmtl mat3
+	Ns 10
+	Ni 1.0
+	d 1.0
+	Tf 1 1 1
+	illum 2
+	Ka 0.5 0.5 0.5
+	Kd 0.9 0.9 0.9
+	Ks 0.0 0.0 0.0
+	map_Kd PlyKirby5KFootp.png
+
+newmtl mat4
+	Ns 10
+	Ni 1.0
+	d 1.0
+	Tf 1 1 1
+	illum 2
+	Ka 0.5 0.5 0.5
+	Kd 0.9 0.9 0.9
+	Ks 0.0 0.0 0.0
+	map_Kd KirbyEye5p.png
+
+newmtl mat8
+	Ns 10
+	Ni 1.0
+	d 1.0
+	Tf 1 1 1
+	illum 2
+	Ka 0.5 0.5 0.5
+	Kd 0.9 0.9 0.9
+	Ks 0.0 0.0 0.0
+	map_Kd HrKirbyPlasmaHatRef.png
+
+newmtl mat9
+	Ns 10
+	Ni 1.0
+	d 1.0
+	Tf 1 1 1
+	illum 2
+	Ka 0.5 0.5 0.5
+	Kd 0.9 0.9 0.9
+	Ks 0.0 0.0 0.0
+	map_Kd HrKirbyPlasma4.png
+
+newmtl mat10
+	Ns 10
+	Ni 1.0
+	d 1.0
+	Tf 1 1 1
+	illum 2
+	Ka 0.5 0.5 0.5
+	Kd 0.9 0.9 0.9
+	Ks 0.0 0.0 0.0
+	map_Kd HrKirbyPlasma3.png
+
