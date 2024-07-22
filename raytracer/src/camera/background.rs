@@ -17,6 +17,6 @@ impl BackGround {
             u as f64 / IMAGE_WIDTH as f64,
             v as f64 / IMAGE_HEIGHT as f64,
             &Point3::default(),
-        )*0.3
+        ) * 0.3
     }
 }

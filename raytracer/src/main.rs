@@ -45,13 +45,18 @@ fn ray_color(
     world: &HittableList,
     lights: &HittableList,
     background: Color,
+    back_ground_illum: Color,
 ) -> Color {
     if depth <= 0 {
         return Color::default();
     }
     let mut rec = None;
     if !world.hit(r, &Interval::new(0.001, INFINITY), &mut rec) {
-        return background;
+        if depth == MAX_RECURSE_DEPTH {
+            return background;
+        } else {
+            return back_ground_illum;
+        }
     }
     let rec = if let Some(data) = rec {
         data
@@ -71,7 +76,14 @@ fn ray_color(
     if srec.skip_pdf {
         // do not need to consider scatter
         return srec.attenuation
-            * ray_color(&srec.skip_pdf_ray, depth - 1, world, lights, background);
+            * ray_color(
+                &srec.skip_pdf_ray,
+                depth - 1,
+                world,
+                lights,
+                background,
+                back_ground_illum,
+            );
     }
 
     let light_pdf = HittablePdf::new(lights, rec.p);
@@ -89,7 +101,14 @@ fn ray_color(
 
     let scatter_pdf = rec.mat.scattering_pdf(r, &rec, &scattered);
 
-    let sample_color = ray_color(&scattered, depth - 1, world, lights, background);
+    let sample_color = ray_color(
+        &scattered,
+        depth - 1,
+        world,
+        lights,
+        background,
+        back_ground_illum,
+    );
     let scatter_color = (sample_color * srec.attenuation * scatter_pdf) / pdf_val;
 
     emission_color + scatter_color
@@ -129,12 +148,19 @@ fn render(
             for i in 0..IMAGE_WIDTH {
                 let mut pixel_color = Color::default();
                 let background_color = back_ground.value(i, j);
+                let background_illum = Color::new(0.6, 0.8, 1.0) * 0.5;
 
                 for s_j in 0..cam.sqrt_spp {
                     for s_i in 0..cam.sqrt_spp {
                         let r = cam.get_ray(i, j, s_i, s_j);
-                        pixel_color +=
-                            ray_color(&r, MAX_RECURSE_DEPTH, &world, &lights, background_color);
+                        pixel_color += ray_color(
+                            &r,
+                            MAX_RECURSE_DEPTH,
+                            &world,
+                            &lights,
+                            background_color,
+                            background_illum,
+                        );
                     }
                 }
                 pixel_color *= cam.pixel_samples_scale;
@@ -182,7 +208,7 @@ fn main() {
 
     let output_param = OutputParam {
         enable_edge_detect: false,
-        savefile: "/201.png",
+        savefile: "/202.png",
         savedir: "output/book0",
     };
 

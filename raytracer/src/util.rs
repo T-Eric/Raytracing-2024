@@ -12,9 +12,9 @@ pub const INFINITY: f64 = f64::INFINITY;
 pub const PI: f64 = std::f64::consts::PI;
 // Image
 pub const ASPECT_RATIO: f64 = 16.0 / 9.0;
-pub const IMAGE_WIDTH: u32 = 1920;
+pub const IMAGE_WIDTH: u32 = 800;
 pub const IMAGE_HEIGHT: u32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u32;
-pub const SAMPLES_PER_PIXEL: u32 = 625;
+pub const SAMPLES_PER_PIXEL: u32 = 225;
 pub const MAX_RECURSE_DEPTH: i32 = 50;
 // Threads
 pub const THREAD_NUM: usize = 20;
